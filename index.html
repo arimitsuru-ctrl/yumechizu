@@ -1,25 +1,97 @@
-<div class="body">
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>夢の地図</title>
 
-  <section id="sec-home" class="section">
-    <h1>夢の地図</h1>
-    <div id="chat"></div>
-    <div id="choices"></div>
-  </section>
+  <style>
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-  <section id="sec-tasks" class="section" style="display:none">
-    <h2>タスク</h2>
-  </section>
+    .body{
+      padding:16px;
+      padding-bottom:64px; /* フッター分 */
+    }
 
-  <section id="sec-map" class="section" style="display:none">
-    <h2>マップ</h2>
-  </section>
+    .section{
+      display:none;
+    }
 
-  <section id="sec-shop" class="section" style="display:none">
-    <h2>買い物</h2>
-  </section>
+    .section h1,
+    .section h2{
+      margin-top:0;
+    }
 
-  <section id="sec-cal" class="section" style="display:none">
-    <h2>履歴</h2>
-  </section>
+    /* フッター */
+    .bnav{
+      position:fixed;
+      left:0;
+      right:0;
+      bottom:0;
+      height:64px;
+      display:flex;
+      background:#fff;
+      border-top:1px solid #ddd;
+      z-index:1000;
+    }
 
-</div>
+    .nb{
+      flex:1;
+      border:none;
+      background:none;
+      font-size:14px;
+      padding:6px 0;
+    }
+
+    .nb.active{
+      color:#0284c7;
+      font-weight:bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- アプリ本体 -->
+  <div class="body">
+
+    <section id="sec-home" class="section">
+      <h1>夢の地図</h1>
+      <div id="chat"></div>
+      <div id="choices"></div>
+    </section>
+
+    <section id="sec-tasks" class="section">
+      <h2>タスク</h2>
+    </section>
+
+    <section id="sec-map" class="section">
+      <h2>マップ</h2>
+    </section>
+
+    <section id="sec-shop" class="section">
+      <h2>買い物</h2>
+    </section>
+
+    <section id="sec-cal" class="section">
+      <h2>履歴</h2>
+    </section>
+
+  </div>
+
+  <!-- フッター -->
+  <nav class="bnav">
+    <button class="nb" data-s="home">🏠<br>ホーム</button>
+    <button class="nb" data-s="tasks">📋<br>タスク</button>
+    <button class="nb" data-s="map">🌐<br>マップ</button>
+    <button class="nb" data-s="shop">🛒<br>買い物</button>
+    <button class="nb" data-s="cal">📅<br>履歴</button>
+  </nav>
+
+  <!-- JS（必ず一番下） -->
+  <script src="main.js"></script>
+</body>
+</html>
