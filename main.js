@@ -1,14 +1,18 @@
+// ==========================
+// main.js（完成版）
+// ==========================
+
 console.log("✅ main.js loaded");
-// ==========================
-// 状態管理
-// ==========================
+
+// 現在のセクション
 let currentSection = "home";
-let messages = [];
 
 // ==========================
 // 初期化
 // ==========================
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ DOMContentLoaded");
+
   setupNav();
   showSection("home");
 });
@@ -17,54 +21,84 @@ document.addEventListener("DOMContentLoaded", () => {
 // フッターナビ設定
 // ==========================
 function setupNav(){
-  document.querySelectorAll(".nb").forEach(btn=>{
+  const buttons = document.querySelectorAll(".nb");
+
+  if(buttons.length === 0){
+    console.log("❌ フッターボタンが見つかりません");
+    return;
+  }
+
+  buttons.forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const s = btn.dataset.s;
+      console.log("🖱 nav click:", s);
       showSection(s);
     });
   });
+
+  console.log("✅ フッターナビ設定完了");
 }
 
 // ==========================
 // セクション切替
 // ==========================
 function showSection(section){
+  console.log("➡ showSection:", section);
+
   currentSection = section;
 
+  // 全部隠す
   document.querySelectorAll(".section").forEach(sec=>{
     sec.style.display = "none";
   });
 
-  const target = document.getElementById("sec-"+section);
-  if(target) target.style.display = "block";
+  // 対象を表示
+  const target = document.getElementById("sec-" + section);
+  if(target){
+    target.style.display = "block";
+    console.log("✅ 表示:", "sec-" + section);
+  }else{
+    console.log("❌ 見つからない:", "sec-" + section);
+  }
 
+  // フッターの active 切替
   document.querySelectorAll(".nb").forEach(b=>{
     b.classList.toggle("active", b.dataset.s === section);
   });
 }
 
 // ==========================
-// AI 呼び出し
+// AI 呼び出し（あとで使う）
 // ==========================
 async function sendToAI(text){
-  messages.push({role:"user", content:text});
+  console.log("🤖 sendToAI:", text);
 
-  const res = await callAI(messages);
+  if(typeof callAI !== "function"){
+    alert("AI は Web 版でのみ利用できます");
+    return;
+  }
 
-  if(res.message){
-    messages.push({role:"assistant", content:res.message});
-    renderMessage(res.message, res.choices);
+  const res = await callAI([{role:"user", content:text}]);
+
+  if(res && res.message){
+    renderMessage(res.message, res.choices || []);
   }
 }
 
 // ==========================
-// 表示
+// AI 表示
 // ==========================
-function renderMessage(msg, choices=[]){
-  const box = document.getElementById("chat");
-  box.innerHTML += `<div class="ai">${msg}</div>`;
+function renderMessage(msg, choices){
+  const chat = document.getElementById("chat");
+  if(!chat) return;
+
+  const div = document.createElement("div");
+  div.textContent = msg;
+  chat.appendChild(div);
 
   const c = document.getElementById("choices");
+  if(!c) return;
+
   c.innerHTML = "";
   choices.forEach(t=>{
     const b = document.createElement("button");
