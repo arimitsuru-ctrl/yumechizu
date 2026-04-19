@@ -1,111 +1,107 @@
-/* =========================
-   セクション切り替え
-========================= */
-const sections = {
-  home: document.getElementById("sec-home"),
-  tasks: document.getElementById("sec-tasks"),
-  map: document.getElementById("sec-map"),
-  shop: document.getElementById("sec-shop"),
-  cal: document.getElementById("sec-cal"),
-};
+// ====== グローバル状態 ======
+const messages = [];
+let currentSection = "home";
 
+// ====== セクション切り替え ======
 document.querySelectorAll(".nb").forEach(btn => {
   btn.addEventListener("click", () => {
-    const key = btn.dataset.s;
-    Object.values(sections).forEach(s => s.classList.remove("active"));
-    sections[key].classList.add("active");
-
-    if (key === "home" && chat.innerHTML.trim() === "") {
-      startAI();
-    }
+    const sec = btn.dataset.s;
+    showSection(sec);
   });
 });
 
-/* =========================
-   AI 関連
-========================= */
-const chat = document.getElementById("chat");
-const choicesDiv = document.getElementById("choices");
+function showSection(sec) {
+  currentSection = sec;
+  document.querySelectorAll(".section").forEach(s => {
+    s.style.display = "none";
+  });
+  const target = document.getElementById("sec-" + sec);
+  if (target) target.style.display = "block";
+}
 
-let messages = [];
-
-/* 初回起動 */
-window.addEventListener("load", () => {
+// ====== 初期表示 ======
+document.addEventListener("DOMContentLoaded", () => {
+  showSection("home");
   startAI();
 });
 
+// ====== AI 初期開始 ======
 function startAI() {
-  chat.innerHTML = "🤖 夢について少し教えてください。";
-  messages = [];
-  renderChoices(["やりたいことを探したい", "夢を形にしたい"]);
+  const chat = document.getElementById("chat");
+  const choices = document.getElementById("choices");
+
+  chat.innerHTML = "あなたの夢について教えてください。";
+  renderChoices(["やりたいことを探したい", "今ある夢を形にしたい"]);
 }
 
-/* 選択肢クリック */
-function onSendAI(text) {
+// ====== 選択肢描画 ======
+function renderChoices(list) {
+  const choices = document.getElementById("choices");
+  choices.innerHTML = "";
+
+  list.forEach(text => {
+    const btn = document.createElement("button");
+    btn.className = "choice";
+    btn.textContent = text;
+    btn.onclick = () => onSendAI(text);
+    choices.appendChild(btn);
+  });
+}
+
+// ====== AI 呼び出し ======
+async function onSendAI(text) {
+  if (!text) return;
+
+  const chat = document.getElementById("chat");
+  const choices = document.getElementById("choices");
+
   messages.push({ role: "user", content: text });
   chat.innerHTML = "考え中…";
+  choices.innerHTML = "";
 
-  callAI(messages).then(res => {
-    chat.innerHTML = res.message || "";
+  const res = await callAI(messages);
+
+  if (res.message) {
+    chat.innerHTML = res.message;
     messages.push({ role: "assistant", content: res.message });
+  }
 
-    if (res.choices && res.choices.length) {
-      renderChoices(res.choices);
-    } else {
-      choicesDiv.innerHTML = "";
-    }
-  });
+  if (res.choices && res.choices.length > 0) {
+    renderChoices(res.choices);
+  }
 }
 
-/* 選択肢描画 */
-function renderChoices(list) {
-  choicesDiv.innerHTML = "";
-  list.forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c;
-    b.onclick = () => onSendAI(c);
-    choicesDiv.appendChild(b);
-  });
-}
-
-/* =========================
-   Puter + Llama 3.3
-========================= */
+// ====== AI 本体（Puter + Llama 3.3） ======
 async function callAI(messages) {
+  const lang = "ja";
 
-  /* Puter初期化待ち（最大3秒） */
+  const demoChoices = ["音楽・アート", "スキルアップ", "旅行・冒険", "健康"];
+
+  const systemPrompt = `
+You are a Dream Sketch AI helping users turn dreams into projects.
+
+Rules:
+1. Start by asking about broad interest areas
+2. Narrow down based on responses
+3. Finally propose: project name, 3-5 subtasks, shopping list
+4. Respond in Japanese
+5. Reply ONLY in JSON:
+{"message":"...","choices":["a","b"],"project":null}
+`;
+
+  // Puter 読み込み待ち
   if (typeof puter === "undefined" || !puter.ai) {
-    await new Promise(r => {
-      let t = 0;
-      const i = setInterval(() => {
-        t += 200;
-        if (typeof puter !== "undefined" && puter.ai) {
-          clearInterval(i); r();
-        }
-        if (t >= 3000) {
-          clearInterval(i); r();
-        }
-      }, 200);
-    });
+    await new Promise(r => setTimeout(r, 1500));
   }
 
   if (typeof puter === "undefined" || !puter.ai) {
     return {
-      message: "⚠️ AIに接続できません。\nインターネット接続を確認してください。",
-      choices: ["もう一度試す"],
+      message:
+        "⚠️ AIを読み込めませんでした。\n\nネット接続を確認して再読み込みしてください。",
+      choices: demoChoices,
       project: null
     };
   }
-
-  const systemPrompt = `
-You are a Dream Sketch AI.
-1. Ask about interests
-2. Narrow down
-3. Propose a project with tasks and shopping list
-Reply ONLY in Japanese.
-Reply ONLY in JSON:
-{"message":"...","choices":["a","b"],"project":null}
-`;
 
   const puterMessages = [
     { role: "system", content: systemPrompt },
@@ -113,22 +109,22 @@ Reply ONLY in JSON:
   ];
 
   try {
-    const res = await puter.ai.chat(puterMessages, {
+    const response = await puter.ai.chat(puterMessages, {
       model: "meta-llama/llama-3.3-70b-instruct"
     });
 
-    const txt =
-      res?.message?.content ||
-      res?.toString() ||
+    const raw =
+      response?.message?.content ||
+      response?.toString() ||
       "{}";
 
-    const cleaned = txt.replace(/```json|```/g, "").trim();
-    return JSON.parse(cleaned);
+    const cleaned = raw.replace(/```json|```/g, "").trim();
 
+    return JSON.parse(cleaned);
   } catch (e) {
     return {
-      message: "⚠️ AIエラーが発生しました。",
-      choices: ["やり直す"],
+      message: "⚠️ AIエラーが発生しました。選択肢から続けてください。",
+      choices: demoChoices,
       project: null
     };
   }
