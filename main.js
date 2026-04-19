@@ -1,131 +1,73 @@
-// ====== グローバル状態 ======
-const messages = [];
-let currentSection = "home";
+/* =========
+   夢の地図 main.js
+   安定版（AI準備中）
+   ========= */
 
-// ====== セクション切り替え ======
-document.querySelectorAll(".nb").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const sec = btn.dataset.s;
-    showSection(sec);
-  });
-});
-
-function showSection(sec) {
-  currentSection = sec;
-  document.querySelectorAll(".section").forEach(s => {
-    s.style.display = "none";
-  });
-  const target = document.getElementById("sec-" + sec);
-  if (target) target.style.display = "block";
-}
-
-// ====== 初期表示 ======
+/* ---------- 画面切り替え ---------- */
 document.addEventListener("DOMContentLoaded", () => {
-  showSection("home");
-  startAI();
+  const buttons = document.querySelectorAll(".nb");
+  const sections = document.querySelectorAll(".section");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.s;
+
+      sections.forEach(sec => {
+        sec.style.display = "none";
+      });
+
+      const show = document.getElementById("sec-" + target);
+      if (show) show.style.display = "block";
+    });
+  });
+
+  // 初期表示
+  renderAI();
 });
 
-// ====== AI 初期開始 ======
-function startAI() {
+/* ---------- AI表示 ---------- */
+function renderAI() {
   const chat = document.getElementById("chat");
   const choices = document.getElementById("choices");
 
-  chat.innerHTML = "あなたの夢について教えてください。";
-  renderChoices(["やりたいことを探したい", "今ある夢を形にしたい"]);
-}
+  if (!chat || !choices) return;
 
-// ====== 選択肢描画 ======
-function renderChoices(list) {
-  const choices = document.getElementById("choices");
+  chat.innerText =
+    "✨ AI準備中です。\n\n" +
+    "次のアップデートで、\n" +
+    "夢をプロジェクトに変えるAIが使えるようになります。";
+
+  const demoChoices = [
+    "音楽・アート",
+    "スキルアップ",
+    "旅行・冒険",
+    "健康"
+  ];
+
   choices.innerHTML = "";
-
-  list.forEach(text => {
+  demoChoices.forEach(c => {
     const btn = document.createElement("button");
-    btn.className = "choice";
-    btn.textContent = text;
-    btn.onclick = () => onSendAI(text);
+    btn.innerText = c;
+    btn.className = "choice-btn";
+    btn.onclick = () => {
+      chat.innerText =
+        `「${c}」ですね。\n\n` +
+        "AIは現在準備中です。\n" +
+        "公開まで少しお待ちください ✨";
+      choices.innerHTML = "";
+    };
     choices.appendChild(btn);
   });
 }
 
-// ====== AI 呼び出し ======
-async function onSendAI(text) {
-  if (!text) return;
-
-  const chat = document.getElementById("chat");
-  const choices = document.getElementById("choices");
-
-  messages.push({ role: "user", content: text });
-  chat.innerHTML = "考え中…";
-  choices.innerHTML = "";
-
-  const res = await callAI(messages);
-
-  if (res.message) {
-    chat.innerHTML = res.message;
-    messages.push({ role: "assistant", content: res.message });
-  }
-
-  if (res.choices && res.choices.length > 0) {
-    renderChoices(res.choices);
-  }
-}
-
-// ====== AI 本体（Puter + Llama 3.3） ======
+/* ---------- AI呼び出し（安全ダミー） ---------- */
 async function callAI(messages) {
-  const lang = "ja";
-
-  const demoChoices = ["音楽・アート", "スキルアップ", "旅行・冒険", "健康"];
-
-  const systemPrompt = `
-You are a Dream Sketch AI helping users turn dreams into projects.
-
-Rules:
-1. Start by asking about broad interest areas
-2. Narrow down based on responses
-3. Finally propose: project name, 3-5 subtasks, shopping list
-4. Respond in Japanese
-5. Reply ONLY in JSON:
-{"message":"...","choices":["a","b"],"project":null}
-`;
-
-  // Puter 読み込み待ち
-  if (typeof puter === "undefined" || !puter.ai) {
-    await new Promise(r => setTimeout(r, 1500));
-  }
-
-  if (typeof puter === "undefined" || !puter.ai) {
-    return {
-      message:
-        "⚠️ AIを読み込めませんでした。\n\nネット接続を確認して再読み込みしてください。",
-      choices: demoChoices,
-      project: null
-    };
-  }
-
-  const puterMessages = [
-    { role: "system", content: systemPrompt },
-    ...messages
-  ];
-
-  try {
-    const response = await puter.ai.chat(puterMessages, {
-      model: "meta-llama/llama-3.3-70b-instruct"
-    });
-
-    const raw =
-      response?.message?.content ||
-      response?.toString() ||
-      "{}";
-
-    const cleaned = raw.replace(/```json|```/g, "").trim();
-
-    return JSON.parse(cleaned);
-  } catch (e) {
-    return {
-      message: "⚠️ AIエラーが発生しました。選択肢から続けてください。",
-      choices: demoChoices,
-      project: null
-    };
-  }
+  return {
+    message:
+      "✨ AI準備中です。\n\n" +
+      "夢を具体的なプロジェクトに変えるAIは、\n" +
+      "次回アップデートで有効になります。",
+    choices: ["音楽・アート", "スキルアップ", "旅行・冒険", "健康"],
+    project: null
+  };
 }
