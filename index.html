@@ -6,31 +6,28 @@
   <title>夢の地図</title>
 
   <style>
-    <style>
-.section{
-  padding:16px;
-}
-</style>
     body{
       margin:0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:#fafafa;
     }
 
+    /* アプリ本体 */
     .body{
       padding:16px;
-      padding-bottom:64px; /* フッター分 */
+      padding-bottom:80px; /* フッター分 */
     }
 
+    /* セクション（表示制御は JS が担当） */
     .section{
-      display:none;
+      padding:8px 0;
     }
 
-    .section h1,
-    .section h2{
-      margin-top:0;
+    h1,h2{
+      margin:0 0 12px 0;
     }
 
-    /* フッター */
+    /* フッターナビ */
     .bnav{
       position:fixed;
       left:0;
@@ -38,7 +35,7 @@
       bottom:0;
       height:64px;
       display:flex;
-      background:#fff;
+      background:#ffffff;
       border-top:1px solid #ddd;
       z-index:1000;
     }
@@ -47,20 +44,37 @@
       flex:1;
       border:none;
       background:none;
-      font-size:14px;
+      font-size:13px;
       padding:6px 0;
+      color:#555;
     }
 
     .nb.active{
       color:#0284c7;
       font-weight:bold;
     }
+
+    /* AI 表示 */
+    #chat div{
+      background:#fff;
+      padding:12px;
+      border-radius:8px;
+      margin-bottom:8px;
+      box-shadow:0 1px 3px rgba(0,0,0,.08);
+    }
+
+    #choices button{
+      margin:4px 4px 0 0;
+      padding:6px 10px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      background:#f5f5f5;
+    }
   </style>
 </head>
-<script>
-  console.log("✅ index.html loaded");
-</script>
+
 <body>
+
   <!-- アプリ本体 -->
   <div class="body">
 
@@ -70,20 +84,24 @@
       <div id="choices"></div>
     </section>
 
-    <section id="sec-tasks" class="section">
+    <section id="sec-tasks" class="section" style="display:none">
       <h2>タスク</h2>
+      <p>ここにタスク一覧が入ります</p>
     </section>
 
-    <section id="sec-map" class="section">
+    <section id="sec-map" class="section" style="display:none">
       <h2>マップ</h2>
+      <p>ここにマインドマップが入ります</p>
     </section>
 
-    <section id="sec-shop" class="section">
+    <section id="sec-shop" class="section" style="display:none">
       <h2>買い物</h2>
+      <p>買い物リスト</p>
     </section>
 
-    <section id="sec-cal" class="section">
+    <section id="sec-cal" class="section" style="display:none">
       <h2>履歴</h2>
+      <p>過去の記録</p>
     </section>
 
   </div>
