@@ -1,3 +1,3 @@
-document.getElementById("app").innerHTML = `
-  <h1>夢の地図</h1>
-`;
+// 追加しない・書き換えるだけ
+document.getElementById("badge").textContent =
+  "Hot Update v1.0.3";
