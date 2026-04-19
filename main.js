@@ -1,109 +1,152 @@
-// ==========================
-// main.js（完成版）
-// ==========================
+/* =========================
+   夢の地図 main.js
+   ========================= */
 
-console.log("✅ main.js loaded");
+/* 状態 */
+let messages = [];
 
-// 現在のセクション
-let currentSection = "home";
+/* 言語判定（簡易） */
+function L(){
+  const lang = (navigator.language || 'ja').slice(0,2);
+  return { code: lang };
+}
 
-// ==========================
-// 初期化
-// ==========================
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ DOMContentLoaded");
+/* AI呼び出し本体 */
+async function callAI(messages){
+  const l = L();
 
-  setupNav();
-  showSection("home");
-});
+  const demoChoices = {
+    ja:['音楽・アート','スキルアップ','旅行・冒険','健康'],
+    en:['Music & Art','Skills','Travel','Health']
+  };
+  const choices = demoChoices[l.code] || demoChoices.en;
 
-// ==========================
-// フッターナビ設定
-// ==========================
-function setupNav(){
-  const buttons = document.querySelectorAll(".nb");
-
-  if(buttons.length === 0){
-    console.log("❌ フッターボタンが見つかりません");
-    return;
+  const systemPrompt = `
+You are a Dream Sketch AI.
+Help users turn dreams into projects.
+Return JSON only.
+Format:
+{
+  "message":"text",
+  "choices":["a","b"],
+  "project":{
+    "name":"...",
+    "tasks":["t1","t2"],
+    "shopping":["s1","s2"]
   }
+}
+Language: ${l.code}
+`;
 
-  buttons.forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      const s = btn.dataset.s;
-      console.log("🖱 nav click:", s);
-      showSection(s);
+  /* Puter待機 */
+  if(typeof puter === 'undefined' || !puter.ai){
+    await new Promise(r=>{
+      let t=0;
+      const i=setInterval(()=>{
+        t+=200;
+        if(typeof puter!=='undefined' && puter.ai){clearInterval(i);r();}
+        if(t>3000){clearInterval(i);r();}
+      },200);
     });
-  });
-
-  console.log("✅ フッターナビ設定完了");
-}
-
-// ==========================
-// セクション切替
-// ==========================
-function showSection(section){
-  console.log("➡ showSection:", section);
-
-  currentSection = section;
-
-  // 全部隠す
-  document.querySelectorAll(".section").forEach(sec=>{
-    sec.style.display = "none";
-  });
-
-  // 対象を表示
-  const target = document.getElementById("sec-" + section);
-  if(target){
-    target.style.display = "block";
-    console.log("✅ 表示:", "sec-" + section);
-  }else{
-    console.log("❌ 見つからない:", "sec-" + section);
   }
 
-  // フッターの active 切替
-  document.querySelectorAll(".nb").forEach(b=>{
-    b.classList.toggle("active", b.dataset.s === section);
-  });
-}
-
-// ==========================
-// AI 呼び出し（あとで使う）
-// ==========================
-async function sendToAI(text){
-  console.log("🤖 sendToAI:", text);
-
-  if(typeof callAI !== "function"){
-    alert("AI は Web 版でのみ利用できます");
-    return;
+  /* Puter未使用時のデモ */
+  if(typeof puter === 'undefined' || !puter.ai){
+    return {
+      message:'（デモ）どんな分野に興味がありますか？',
+      choices,
+      project:null
+    };
   }
 
-  const res = await callAI([{role:"user", content:text}]);
+  const puterMessages = [
+    {role:'system',content:systemPrompt},
+    ...messages
+  ];
 
-  if(res && res.message){
-    renderMessage(res.message, res.choices || []);
+  try{
+    const res = await puter.ai.chat(puterMessages,{
+      model:'meta-llama/llama-3.3-70b-instruct'
+    });
+
+    const txt = res?.message?.content || '{}';
+    const cleaned = txt.replace(/```json|```/g,'').trim();
+    return JSON.parse(cleaned);
+
+  }catch(e){
+    return {
+      message:'⚠️ AI接続エラー。デモで続行します。',
+      choices,
+      project:null
+    };
   }
 }
 
-// ==========================
-// AI 表示
-// ==========================
-function renderMessage(msg, choices){
+/* AI送信 */
+async function onSendAI(textFromChoice){
+  const input = document.getElementById("userInput");
+  const text = textFromChoice || input.value.trim();
+  if(!text) return;
+
+  input.value = '';
+
+  messages.push({role:'user',content:text});
+  renderUser(text);
+
+  const res = await callAI(messages);
+
+  messages.push({role:'assistant',content:res.message});
+  renderAI(res);
+
+  if(res.project){
+    renderProject(res.project);
+  }
+}
+
+/* 表示系 */
+function renderUser(text){
   const chat = document.getElementById("chat");
-  if(!chat) return;
-
   const div = document.createElement("div");
-  div.textContent = msg;
+  div.textContent = '🧑 ' + text;
+  chat.appendChild(div);
+}
+
+function renderAI(res){
+  const chat = document.getElementById("chat");
+  const div = document.createElement("div");
+  div.textContent = '🤖 ' + res.message;
   chat.appendChild(div);
 
-  const c = document.getElementById("choices");
-  if(!c) return;
-
-  c.innerHTML = "";
-  choices.forEach(t=>{
+  const choicesDiv = document.getElementById("choices");
+  choicesDiv.innerHTML = '';
+  (res.choices || []).forEach(c=>{
     const b = document.createElement("button");
-    b.textContent = t;
-    b.onclick = ()=>sendToAI(t);
-    c.appendChild(b);
+    b.textContent = c;
+    b.style.margin = '4px';
+    b.onclick = ()=>onSendAI(c);
+    choicesDiv.appendChild(b);
   });
 }
+
+function renderProject(p){
+  /* タスク */
+  const taskSec = document.getElementById("sec-tasks");
+  taskSec.innerHTML = '<h2>タスク</h2><ul>' +
+    p.tasks.map(t=>`<li>${t}</li>`).join('') +
+    '</ul>';
+
+  /* 買い物 */
+  const shopSec = document.getElementById("sec-shop");
+  shopSec.innerHTML = '<h2>買い物</h2><ul>' +
+    p.shopping.map(s=>`<li>${s}</li>`).join('') +
+    '</ul>';
+}
+
+/* 初期メッセージ */
+window.addEventListener('load',()=>{
+  renderAI({
+    message:'こんにちは。どんな夢や、やってみたいことがありますか？',
+    choices:['音楽','仕事','旅行','健康'],
+    project:null
+  });
+});
