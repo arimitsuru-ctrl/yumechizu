@@ -5,144 +5,129 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>夢の地図</title>
 
-  <!-- Puter（WebでAIを使う場合のみ有効） -->
+  <!-- Puter.js（Llama用） -->
   <script src="https://js.puter.com/v2/"></script>
 
   <style>
-    body {
-      margin: 0;
+    body{
+      margin:0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f7f7f7;
+      background:#f7f7f7;
     }
 
-    .body {
-      padding: 16px;
-      padding-bottom: 80px; /* フッター分 */
+    .body{
+      padding:16px;
+      padding-bottom:80px; /* フッター分 */
     }
 
-    .section {
-      display: none;
+    h1,h2{
+      margin-top:0;
     }
 
-    .section.active {
-      display: block;
+    /* セクション */
+    .section{
+      display:none;
     }
-
-    h1, h2 {
-      margin-top: 0;
+    .section.active{
+      display:block;
     }
 
     /* AI */
-    #chat div {
-      font-size: 16px;
+    #chat{
+      background:#fff;
+      padding:12px;
+      border-radius:8px;
+      min-height:80px;
+      margin-bottom:12px;
+    }
+
+    #choices button{
+      margin:4px;
+      padding:8px 12px;
+      border-radius:20px;
+      border:none;
+      background:#e0e0e0;
+      cursor:pointer;
     }
 
     /* フッター */
-    .bnav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 64px;
-      display: flex;
-      background: #ffffff;
-      border-top: 1px solid #ccc;
+    .bnav{
+      position:fixed;
+      bottom:16px; /* ← 16px 上げている */
+      left:0;
+      right:0;
+      display:flex;
+      justify-content:space-around;
+      background:#fff;
+      border-radius:16px;
+      margin:0 12px;
+      padding:8px 0;
+      box-shadow:0 4px 12px rgba(0,0,0,0.15);
     }
 
-    .nb {
-      flex: 1;
-      border: none;
-      background: none;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+    .nb{
+      background:none;
+      border:none;
+      text-align:center;
+      font-size:12px;
+      cursor:pointer;
     }
-
-    .nb:active {
-      background: #eee;
+    .nb span{
+      display:block;
+      font-size:11px;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- メイン -->
-  <div class="body">
+<div class="body">
 
-    <!-- HOME -->
-    <section id="sec-home" class="section active">
-      <h1>夢の地図</h1>
+  <!-- HOME -->
+  <section id="sec-home" class="section active">
+    <h1>夢の地図</h1>
 
-      <!-- AI表示 -->
-      <div id="chat"></div>
-      <div id="choices"></div>
+    <div id="chat">AIを起動中…</div>
+    <div id="choices"></div>
+  </section>
 
-      <!-- AI入力 -->
-      <div style="margin-top:12px;">
-        <input
-          id="userInput"
-          type="text"
-          placeholder="やりたいこと・夢を書いてください"
-          style="width:70%; padding:8px;"
-        />
-        <button onclick="onSendAI()" style="padding:8px;">
-          送信
-        </button>
-      </div>
-    </section>
+  <!-- TASKS -->
+  <section id="sec-tasks" class="section">
+    <h2>タスク</h2>
+    <p>ここにタスクが表示されます</p>
+  </section>
 
-    <!-- TASK -->
-    <section id="sec-tasks" class="section">
-      <h2>タスク</h2>
-      <p>ここにAIが作ったタスクが入ります</p>
-    </section>
+  <!-- MAP -->
+  <section id="sec-map" class="section">
+    <h2>マップ</h2>
+    <p>マインドマップ表示予定</p>
+  </section>
 
-    <!-- MAP -->
-    <section id="sec-map" class="section">
-      <h2>マップ</h2>
-      <p>夢の構造マップ</p>
-    </section>
+  <!-- SHOP -->
+  <section id="sec-shop" class="section">
+    <h2>買い物</h2>
+    <p>買い物リスト</p>
+  </section>
 
-    <!-- SHOP -->
-    <section id="sec-shop" class="section">
-      <h2>買い物</h2>
-      <p>必要なアイテム一覧</p>
-    </section>
+  <!-- CAL -->
+  <section id="sec-cal" class="section">
+    <h2>履歴</h2>
+    <p>過去のプロジェクト</p>
+  </section>
 
-    <!-- CAL -->
-    <section id="sec-cal" class="section">
-      <h2>履歴</h2>
-      <p>過去のプロジェクト</p>
-    </section>
+</div>
 
-  </div>
+<!-- フッター -->
+<nav class="bnav">
+  <button class="nb" data-s="home">🏠<span>ホーム</span></button>
+  <button class="nb" data-s="tasks">📋<span>タスク</span></button>
+  <button class="nb" data-s="map">🌐<span>マップ</span></button>
+  <button class="nb" data-s="shop">🛒<span>買い物</span></button>
+  <button class="nb" data-s="cal">📅<span>履歴</span></button>
+</nav>
 
-  <!-- フッター -->
-  <nav class="bnav">
-    <button class="nb" data-s="home">🏠<span>ホーム</span></button>
-    <button class="nb" data-s="tasks">📋<span>タスク</span></button>
-    <button class="nb" data-s="map">🌐<span>マップ</span></button>
-    <button class="nb" data-s="shop">🛒<span>買い物</span></button>
-    <button class="nb" data-s="cal">📅<span>履歴</span></button>
-  </nav>
-
-  <!-- メインJS -->
-  <script src="main.js"></script>
-
-  <!-- 画面切り替え -->
-  <script>
-    document.querySelectorAll(".nb").forEach(btn=>{
-      btn.onclick = ()=>{
-        const s = btn.dataset.s;
-        document.querySelectorAll(".section").forEach(sec=>{
-          sec.classList.remove("active");
-        });
-        document.getElementById("sec-"+s).classList.add("active");
-      };
-    });
-  </script>
+<!-- JS（moduleにしない！） -->
+<script src="main.js"></script>
 
 </body>
 </html>
