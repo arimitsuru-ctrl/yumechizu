@@ -1,134 +1,79 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <link rel="stylesheet" href="style.css">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>夢の地図</title>
 
-  <!-- Puter.js（Llama用） -->
-  <script src="https://js.puter.com/v2/"></script>
-
-  <style>
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:#f7f7f7;
-    }
-
-    .body{
-      padding:16px;
-      padding-bottom:80px; /* フッター分 */
-    }
-
-    h1,h2{
-      margin-top:0;
-    }
-
-    /* セクション */
-    .section{
-      display:none;
-    }
-    .section.active{
-      display:block;
-    }
-
-    /* AI */
-    #chat{
-      background:#fff;
-      padding:12px;
-      border-radius:8px;
-      min-height:80px;
-      margin-bottom:12px;
-    }
-
-    #choices button{
-      margin:4px;
-      padding:8px 12px;
-      border-radius:20px;
-      border:none;
-      background:#e0e0e0;
-      cursor:pointer;
-    }
-
-    /* フッター */
-    .bnav{
-      position:fixed;
-      bottom:16px; /* ← 16px 上げている */
-      left:0;
-      right:0;
-      display:flex;
-      justify-content:space-around;
-      background:#fff;
-      border-radius:16px;
-      margin:0 12px;
-      padding:8px 0;
-      box-shadow:0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .nb{
-      background:none;
-      border:none;
-      text-align:center;
-      font-size:12px;
-      cursor:pointer;
-    }
-    .nb span{
-      display:block;
-      font-size:11px;
-    }
-  </style>
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
 </head>
-
 <body>
 
-<div class="body">
+  <div class="body">
 
-  <!-- HOME -->
-  <section id="sec-home" class="section active">
-    <h1>夢の地図</h1>
+    <!-- ===== Home ===== -->
+    <section id="sec-home" class="section">
+      <h1>夢の地図</h1>
 
-    <div id="chat">AIを起動中…</div>
-    <div id="choices"></div>
-  </section>
+      <!-- AI チャット -->
+      <div id="chat"></div>
+      <div id="choices"></div>
+    </section>
 
-  <!-- TASKS -->
-  <section id="sec-tasks" class="section">
-    <h2>タスク</h2>
-    <p>ここにタスクが表示されます</p>
-  </section>
+    <!-- ===== Tasks ===== -->
+    <section id="sec-tasks" class="section" style="display:none">
+      <h2>タスク</h2>
+      <div id="tasks-list"></div>
+    </section>
 
-  <!-- MAP -->
-  <section id="sec-map" class="section">
-    <h2>マップ</h2>
-    <p>マインドマップ表示予定</p>
-  </section>
+    <!-- ===== Map ===== -->
+    <section id="sec-map" class="section" style="display:none">
+      <h2>マップ</h2>
+      <p>（今後ここに夢のマップを表示）</p>
+    </section>
 
-  <!-- SHOP -->
-  <section id="sec-shop" class="section">
-    <h2>買い物</h2>
-    <p>買い物リスト</p>
-  </section>
+    <!-- ===== Shop ===== -->
+    <section id="sec-shop" class="section" style="display:none">
+      <h2>買い物</h2>
+      <div id="shop-list"></div>
+    </section>
 
-  <!-- CAL -->
-  <section id="sec-cal" class="section">
-    <h2>履歴</h2>
-    <p>過去のプロジェクト</p>
-  </section>
+    <!-- ===== History ===== -->
+    <section id="sec-cal" class="section" style="display:none">
+      <h2>履歴</h2>
+      <div id="history-list"></div>
+    </section>
 
-</div>
+  </div>
 
-<!-- フッター -->
-<nav class="bnav">
-  <button class="nb" data-s="home">🏠<span>ホーム</span></button>
-  <button class="nb" data-s="tasks">📋<span>タスク</span></button>
-  <button class="nb" data-s="map">🌐<span>マップ</span></button>
-  <button class="nb" data-s="shop">🛒<span>買い物</span></button>
-  <button class="nb" data-s="cal">📅<span>履歴</span></button>
-</nav>
+  <!-- ===== Bottom Navigation ===== -->
+  <nav class="bnav">
+    <button class="nb" data-s="home">🏠<span>ホーム</span></button>
+    <button class="nb" data-s="tasks">📋<span>タスク</span></button>
+    <button class="nb" data-s="map">🌐<span>マップ</span></button>
+    <button class="nb" data-s="shop">🛒<span>買い物</span></button>
+    <button class="nb" data-s="cal">📅<span>履歴</span></button>
+  </nav>
 
-<!-- JS（moduleにしない！） -->
-<script src="main.js"></script>
+  <!-- JS -->
+  <script src="main.js"></script>
+
+  <!-- ===== 画面切り替え ===== -->
+  <script>
+    const buttons = document.querySelectorAll(".nb");
+    const sections = document.querySelectorAll(".section");
+
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.s;
+
+        sections.forEach(sec => {
+          sec.style.display = sec.id === "sec-" + target ? "block" : "none";
+        });
+      });
+    });
+  </script>
 
 </body>
 </html>
