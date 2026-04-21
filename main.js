@@ -1,9 +1,10 @@
-// ===== 設定 =====
+// ==============================
+// 設定
+// ==============================
 const AI_URL = "https://yumechizu-ai.arimitsuru.workers.dev";
 
-// アプリの言語コード（既存の取得ロジックがあれば差し替えてOK）
+// 言語コード取得（10ヵ国語対応）
 function getLang() {
-  // 例: navigator.language から簡易取得
   const l = (navigator.language || "en").slice(0, 2);
   const map = {
     ja: "Japanese",
@@ -21,13 +22,16 @@ function getLang() {
   return map[l] || "English";
 }
 
-// ===== UI 要素 =====
+// ==============================
+// UI要素
+// ==============================
 const chatEl = document.getElementById("chat");
 const choicesEl = document.getElementById("choices");
 
 // 入力UI（無ければ自動生成）
 let inputEl = document.getElementById("ai-input");
 let sendBtn = document.getElementById("ai-send");
+
 if (!inputEl) {
   const wrap = document.createElement("div");
   wrap.style.display = "flex";
@@ -48,7 +52,9 @@ if (!inputEl) {
   chatEl.after(wrap);
 }
 
-// ===== 表示ヘルパー =====
+// ==============================
+// 表示ヘルパー
+// ==============================
 function appendMessage(text, who = "ai") {
   const div = document.createElement("div");
   div.className = `msg ${who}`;
@@ -69,6 +75,7 @@ function renderChoices(choices = []) {
 
 function renderProject(project) {
   if (!project) return;
+
   const box = document.createElement("div");
   box.className = "project";
 
@@ -97,7 +104,75 @@ function renderProject(project) {
   chatEl.appendChild(box);
 }
 
-// ===== AI 呼び出し =====
+// ==============================
+// project 保存・読込
+// ==============================
+function loadProjects() {
+  return JSON.parse(localStorage.getItem("projects") || "[]");
+}
+
+function saveProject(project) {
+  const list = loadProjects();
+  list.unshift({
+    ...project,
+    createdAt: Date.now()
+  });
+  localStorage.setItem("projects", JSON.stringify(list));
+}
+
+// ==============================
+// 各画面描画
+// ==============================
+function renderTasks() {
+  const el = document.getElementById("tasks-list");
+  if (!el) return;
+
+  const list = loadProjects();
+  el.innerHTML = "";
+
+  list.forEach(p => {
+    p.tasks.forEach(t => {
+      const div = document.createElement("div");
+      div.textContent = "☑️ " + t;
+      el.appendChild(div);
+    });
+  });
+}
+
+function renderShopping() {
+  const el = document.getElementById("shop-list");
+  if (!el) return;
+
+  const list = loadProjects();
+  el.innerHTML = "";
+
+  list.forEach(p => {
+    (p.shopping || []).forEach(s => {
+      const div = document.createElement("div");
+      div.textContent = "🛒 " + s;
+      el.appendChild(div);
+    });
+  });
+}
+
+function renderHistory() {
+  const el = document.getElementById("history-list");
+  if (!el) return;
+
+  const list = loadProjects();
+  el.innerHTML = "";
+
+  list.forEach(p => {
+    const d = new Date(p.createdAt);
+    const div = document.createElement("div");
+    div.textContent = `📌 ${p.name}（${d.toLocaleDateString()}）`;
+    el.appendChild(div);
+  });
+}
+
+// ==============================
+// AI呼び出し
+// ==============================
 async function callAI(prompt) {
   const res = await fetch(AI_URL, {
     method: "POST",
@@ -110,15 +185,15 @@ async function callAI(prompt) {
 
   const data = await res.json();
 
-  // ★ 重要：answer は JSON文字列 → パースする
-  const ai = typeof data.answer === "string"
+  // answer は JSON文字列 → パース
+  return typeof data.answer === "string"
     ? JSON.parse(data.answer)
     : data.answer;
-
-  return ai;
 }
 
-// ===== 送信処理 =====
+// ==============================
+// 送信処理
+// ==============================
 async function sendToAI(text) {
   if (!text) return;
 
@@ -131,15 +206,23 @@ async function sendToAI(text) {
 
     if (ai.message) appendMessage(ai.message, "ai");
     if (ai.choices) renderChoices(ai.choices);
-    if (ai.project) renderProject(ai.project);
 
+    if (ai.project) {
+      renderProject(ai.project);
+      saveProject(ai.project);
+      renderTasks();
+      renderShopping();
+      renderHistory();
+    }
   } catch (e) {
     appendMessage("⚠️ AIとの通信に失敗しました。", "ai");
     console.error(e);
   }
 }
 
-// ===== イベント =====
+// ==============================
+// イベント
+// ==============================
 sendBtn.onclick = () => sendToAI(inputEl.value);
 inputEl.addEventListener("keydown", e => {
   if (e.key === "Enter") sendToAI(inputEl.value);
@@ -147,3 +230,8 @@ inputEl.addEventListener("keydown", e => {
 
 // 初期メッセージ
 appendMessage("やりたいこと・夢を教えてください。", "ai");
+
+// 初期描画
+renderTasks();
+renderShopping();
+renderHistory();
