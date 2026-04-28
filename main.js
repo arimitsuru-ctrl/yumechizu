@@ -9,18 +9,15 @@ document.getElementById("send").addEventListener("click", async () => {
   try {
     const res = await fetch(ENDPOINT, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        type: "console-test",
-        message: input,
-        time: new Date().toISOString(),
+        messages: [{ role: "user", content: input }]
       }),
     });
 
     const text = await res.text();
     output.textContent = text;
+
   } catch (err) {
     output.textContent = "エラー: " + err.message;
   }
