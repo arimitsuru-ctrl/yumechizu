@@ -1,4 +1,4 @@
-const ENDPOINT = "https://yumechizu3.arimitsuru.workers.dev/";
+const ENDPOINT = "https://yumechizu3.arimitsuru.workers.dev/api/chat";
 
 document.getElementById("send").addEventListener("click", async () => {
   const input = document.getElementById("input").value;
