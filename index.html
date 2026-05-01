@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<meta name="theme-color" content="#06B6D4"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="夢の地図"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>夢の地図</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%2306B6D4'/%3E%3Cstop offset='50%25' stop-color='%238b5cf6'/%3E%3Cstop offset='100%25' stop-color='%23EF476F'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23bg)'/%3E%3Ctext x='50' y='62' font-size='52' text-anchor='middle'%3E🗺️%3C/text%3E%3C/svg%3E"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{--sky:#06B6D4;--leaf:#06D6A0;--rose:#EF476F;--ink:#1a1a2e;--gold:#f59e0b;--purple:#8b5cf6;--r:16px;--sh:0 4px 20px rgba(6,182,212,0.12);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;background:linear-gradient(135deg,#e0f7fa,#fdf6ec 60%,#fce4ec);color:var(--ink);}
+#app{display:flex;flex-direction:column;height:100dvh;min-height:0;position:relative;}
+/* 120%ズーム・APK WebView対応: フォールバック */
+@supports not (height: 100dvh){#app{height:100vh;}}
+
+/* ─ Header ─ */
+.hdr{background:linear-gradient(90deg,#06B6D4,#06D6A0 55%,#FFD166);padding:calc(var(--st)+8px) 10px 8px;display:flex;align-items:center;gap:6px;box-shadow:0 2px 16px rgba(6,182,212,0.25);flex-shrink:0;z-index:50;}
+.hdr-logo{font-size:17px;font-weight:700;color:white;letter-spacing:1px;flex:1;margin-left:10px;}
+.hdr-btn{background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.5);color:white;border-radius:18px;padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;font-weight:700;}
+.hdr-spc{width:36px;flex-shrink:0;}
+
+/* ─ Body / Nav ─ */
+.body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:0;min-height:0;}
+/* ボトムナビ: flex子要素として配置（fixed不使用） */
+.bnav{display:flex;background:white;border-top:1.5px solid #e0f2fe;padding-bottom:var(--sb);flex-shrink:0;box-shadow:0 -2px 12px rgba(6,182,212,0.08);z-index:100;position:relative;pointer-events:auto;}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;padding:7px 2px 4px;gap:2px;background:none;border:none;cursor:pointer;font-family:inherit;color:#94a3b8;font-size:9px;font-weight:600;-webkit-tap-highlight-color:rgba(6,182,212,0.15);touch-action:manipulation;}
+.nb .ico{font-size:19px;} .nb.active{color:#06B6D4;}
+
+/* ─ Sections ─ */
+.sec{padding:13px;display:none;} .sec.active{display:block;}
+.sec-t{font-size:16px;font-weight:700;color:#0e7490;margin-bottom:11px;display:flex;align-items:center;gap:7px;}
+
+/* ─ Cards / Inputs / Buttons ─ */
+.card{background:white;border-radius:var(--r);box-shadow:var(--sh);padding:12px;border:1.5px solid #e0f2fe;margin-bottom:11px;}
+.ct{font-size:12px;font-weight:700;color:#0e7490;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:5px;}
+.inp{width:100%;border:1.5px solid #bae6fd;border-radius:10px;padding:10px 12px;font-family:inherit;font-size:14px;color:var(--ink);background:#f8fdff;outline:none;transition:border .2s;-webkit-appearance:none;}
+.inp:focus{border-color:var(--sky);}
+.btn{border:none;border-radius:10px;padding:10px 13px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;transition:all .2s;}
+.bp{background:linear-gradient(90deg,#06B6D4,#06D6A0);color:white;} .bp:active{opacity:.82;transform:scale(.97);}
+.bg{background:#f1f5f9;color:#64748b;} .bd{background:#fee2e2;color:#ef4444;}
+.bpu{background:linear-gradient(135deg,#8b5cf6,#ec4899);color:white;}
+.bs{padding:6px 10px;font-size:11px;border-radius:8px;} .bw{width:100%;}
+.bic{background:none;border:1.5px solid #bae6fd;border-radius:7px;padding:3px 6px;cursor:pointer;font-size:13px;font-family:inherit;}
+
+/* ─ Mic ─ */
+.mic{background:linear-gradient(135deg,#EF476F,#f59e0b);color:white;border:none;border-radius:50%;width:41px;height:41px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(239,71,111,0.3);flex-shrink:0;}
+.mic.on{animation:pmic .7s infinite,micring 1.2s infinite;}
+@keyframes pmic{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes micring{0%{box-shadow:0 0 0 0 rgba(239,71,111,0.5)}70%{box-shadow:0 0 0 12px rgba(239,71,111,0)}100%{box-shadow:0 0 0 0 rgba(239,71,111,0)}}
+.vh{font-size:10px;color:var(--rose);font-weight:600;margin-top:3px;min-height:14px;}
+
+/* ─ Pills / Task items ─ */
+.pill{display:inline-flex;align-items:center;gap:3px;padding:4px 9px;border-radius:18px;font-size:11px;font-weight:700;cursor:pointer;border:2px solid transparent;font-family:inherit;transition:border-color .2s;}
+.ti{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:11px;margin-bottom:5px;border:1.5px solid transparent;background:#f8fdff;cursor:pointer;}
+.ti.di{opacity:.5;} .ti:active{background:#e0f7fa;}
+.chk{width:20px;height:20px;border-radius:50%;border:2px solid transparent;background:transparent;display:none;font-size:0;flex-shrink:0;cursor:pointer;transition:all .2s;}
+.chk.dn{display:none;}
+.tl{flex:1;font-size:13px;} .tl.dn{text-decoration:line-through;color:#9ca3af;}
+.tbg{font-size:9px;padding:2px 6px;border-radius:6px;font-weight:700;flex-shrink:0;}
+.ch{margin-left:18px;border-left:2px dashed #bae6fd;padding-left:6px;}
+.pb{height:5px;background:#e0f2fe;border-radius:3px;overflow:hidden;margin-top:4px;}
+.pf{height:100%;background:linear-gradient(90deg,#06B6D4,#06D6A0);border-radius:3px;transition:width .5s;}
+
+/* ─ Shopping ─ */
+.si{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f9ff;} .si:last-child{border-bottom:none;}
+.sd{text-decoration:line-through;color:#9ca3af;}
+.sl{text-decoration:none;font-size:12px;padding:3px 7px;border-radius:7px;border:1.5px solid #bae6fd;color:#06B6D4;background:#f0f9ff;flex-shrink:0;}
+.sugg-l{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.sg{background:#e0f7fa;border:1.5px solid #bae6fd;border-radius:18px;padding:4px 9px;font-size:11px;cursor:pointer;color:#0e7490;font-family:inherit;font-weight:600;}
+.sg:active{background:var(--sky);color:white;}
+
+/* ─ Calendar ─ */
+.cal-hdr{display:flex;align-items:center;gap:9px;margin-bottom:9px;}
+.cal-ml{flex:1;text-align:center;font-weight:700;font-size:15px;color:#0e7490;}
+.cal-nv{background:#e0f7fa;border:none;border-radius:7px;width:30px;height:30px;font-size:14px;cursor:pointer;}
+.cal-wd-r{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px;}
+.cal-wd{text-align:center;font-size:10px;font-weight:700;color:#64748b;padding:2px 0;}
+.cal-gr{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.cal-c{border-radius:8px;padding:4px 3px;min-height:54px;background:#f8fdff;border:1px solid #e0f2fe;font-size:10px;}
+.cal-c.td{border-color:var(--sky);background:#e0f7fa;} .cal-c.ot{opacity:.35;}
+.cal-n{font-weight:700;color:#0e7490;margin-bottom:2px;font-size:10px;}
+.cal-d{border-radius:3px;padding:1px 3px;font-size:8px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:white;cursor:pointer;}
+
+/* ─ Home dashboard ─ */
+.home-cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;padding-top:18px;}
+.home-cat-card{background:white;border-radius:var(--r);box-shadow:var(--sh);padding:11px;border:1.5px solid #e0f2fe;cursor:pointer;transition:all .2s;}
+.home-cat-card:active{transform:scale(.97);}
+.dream-sketch-card{background:linear-gradient(135deg,#fff7ed,#fce7f3 35%,#ede9fe 65%,#e0f2fe);border:2px solid #c4b5fd;box-shadow:0 6px 28px rgba(139,92,246,0.18);grid-column:1/-1;overflow:visible;margin-top:18px;position:relative;text-align:center;}
+.dream-sketch-card::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(251,191,36,0.25),transparent 70%);border-radius:50%;}
+.dream-sketch-badge{position:absolute;top:-10px;right:10px;background:linear-gradient(90deg,#EF476F,#f59e0b);color:white;font-size:9px;font-weight:700;padding:2px 8px;border-radius:10px;}
+
+/* ─ Float panels ─ */
+.fov{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,0.25);display:none;pointer-events:none;} .fov.open{display:block;pointer-events:auto;}
+.fpanel{position:fixed;left:0;right:0;bottom:0;z-index:150;background:white;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,0.15);max-height:60vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding-bottom:var(--sb);pointer-events:none;}
+.fpanel.open{transform:translateY(0);pointer-events:auto;}
+.fhandle{width:40px;height:4px;background:#e0f2fe;border-radius:2px;margin:10px auto 12px;}
+.fhdr{padding:0 14px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #f0f9ff;margin-bottom:8px;}
+.fbody{padding:0 14px 14px;}
+.fti{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;margin-bottom:5px;background:#f8fdff;cursor:pointer;}
+.fti:active{background:#e0f7fa;}
+
+/* ─ Mindmap ─ */
+.mm-proj-card{background:white;border-radius:14px;box-shadow:var(--sh);padding:13px;border:1.5px solid #e0f2fe;margin-bottom:10px;display:flex;align-items:center;gap:12px;}
+.mm-proj-icon{font-size:26px;flex-shrink:0;}
+.mm-proj-info{flex:1;min-width:0;}
+.mm-proj-title{font-size:13px;font-weight:700;color:#0e7490;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mm-proj-sub{font-size:10px;color:#64748b;margin-top:2px;}
+/* 並び替えハンドル */
+.mm-drag-handle{font-size:18px;color:#94a3b8;cursor:grab;flex-shrink:0;padding:4px;touch-action:none;}
+.mm-drag-handle:active{cursor:grabbing;}
+.mm-proj-card.drag-over{border:2px dashed #06B6D4;background:#e0f7fa;}
+/* 達成フォルダ */
+.mm-archive-section{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:1.5px solid #6ee7b7;border-radius:14px;padding:13px;margin-bottom:10px;}
+.mm-archive-title{font-size:13px;font-weight:700;color:#065f46;display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:0;}
+.mm-archive-list{margin-top:10px;}
+.mm-archive-item{display:flex;align-items:center;gap:10px;padding:9px 10px;background:white;border-radius:10px;margin-bottom:6px;border:1px solid #a7f3d0;}
+/* マインドマップ フローティングキャンバス */
+#mm-float-panel{display:none !important;}
+#mm-float-panel.open{display:flex !important;}
+
+/* ─ AI (Dream Sketch) ─ */
+.dream-chat{display:flex;flex-direction:column;gap:10px;padding:10px 0;}
+.dream-bubble{max-width:85%;padding:10px 13px;border-radius:16px;font-size:13px;line-height:1.6;}
+.dream-bubble.ai{background:linear-gradient(135deg,#e0f7fa,#f0f9ff);color:#0e7490;align-self:flex-start;border:1.5px solid #bae6fd;}
+.dream-bubble.user{background:linear-gradient(135deg,#8b5cf6,#06B6D4);color:white;align-self:flex-end;}
+.dream-typing{display:flex;gap:4px;padding:8px 12px;background:#f0f9ff;border-radius:16px;width:fit-content;}
+.dream-dot{width:6px;height:6px;border-radius:50%;background:#06B6D4;animation:dt .8s infinite;}
+.dream-dot:nth-child(2){animation-delay:.15s;} .dream-dot:nth-child(3){animation-delay:.3s;}
+@keyframes dt{0%,80%,100%{transform:scale(.8);opacity:.5}40%{transform:scale(1.1);opacity:1}}
+.dream-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px;}
+.dream-choice{background:white;border:1.5px solid #bae6fd;border-radius:10px;padding:9px 10px;cursor:pointer;font-size:12px;font-family:inherit;color:#0e7490;font-weight:600;text-align:left;}
+.dream-register-btn{background:linear-gradient(135deg,#8b5cf6,#ec4899);color:white;border:none;border-radius:12px;padding:12px;width:100%;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;margin-top:10px;}
+
+/* ─ Modal ─ */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;display:flex;align-items:flex-end;backdrop-filter:blur(4px);pointer-events:auto;}
+.mo{background:white;border-radius:20px 20px 0 0;padding:17px 17px calc(17px + var(--sb));width:100%;max-height:92vh;overflow-y:auto;}
+.mot{font-size:15px;font-weight:700;color:#0e7490;margin-bottom:11px;}
+.mos{font-size:11px;color:#64748b;margin-bottom:7px;}
+
+/* ─ Cat manager ─ */
+.cmi{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:9px;background:#f8fdff;border:1.5px solid #e0f2fe;margin-bottom:5px;}
+.eg{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;}
+.eo{font-size:18px;cursor:pointer;padding:3px;border-radius:6px;border:2px solid transparent;}
+.eo.s{background:#e0f7fa;border-color:#06B6D4;}
+.cg{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.co{width:20px;height:20px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .15s;}
+.co.s{border-color:#1a1a2e;transform:scale(1.2);}
+.lbs{font-size:11px;color:#64748b;margin-top:5px;margin-bottom:2px;}
+.fb{font-size:10px;color:#94a3b8;background:#f0f9ff;padding:2px 6px;border-radius:6px;}
+.eb{background:#f0f9ff;border-radius:10px;padding:10px;margin-bottom:6px;margin-left:6px;border:1.5px solid #bae6fd;}
+.ab{background:#f8fdff;border-radius:12px;padding:12px;border:1.5px dashed #bae6fd;margin-bottom:12px;}
+
+/* ─ Help / Lang / Transfer ─ */
+.help-card{background:white;border-radius:13px;padding:12px;margin-bottom:8px;border:1.5px solid #e0f2fe;box-shadow:var(--sh);}
+.help-q{font-weight:700;color:#0e7490;font-size:13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.help-a{font-size:12px;color:#334155;line-height:1.7;margin-top:7px;display:none;white-space:pre-wrap;}
+.help-a.open{display:block;}
+.lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.lang-btn{padding:8px;border-radius:9px;border:1.5px solid #e0f2fe;background:#f8fdff;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;text-align:center;}
+.lang-btn.active{background:#e0f7fa;border-color:#06B6D4;color:#0e7490;}
+.xfer-section{background:#f8fdff;border:1.5px dashed #bae6fd;border-radius:11px;padding:13px;margin-bottom:11px;}
+
+/* ─ Misc ─ */
+.row{display:flex;gap:6px;align-items:center;} .mt8{margin-top:8px;} .lbl{font-size:11px;color:#64748b;margin:5px 0 2px;}
+.emp{text-align:center;padding:24px 14px;color:#9ca3af;} .emp-e{font-size:36px;margin-bottom:7px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="hdr">
+    <span id="hdr-date" style="font-size:12px;font-weight:700;color:#0e7490;letter-spacing:0.5px"></span>
+    <span id="hdr-status" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;background:#d1fae5;color:#065f46;margin-left:6px">ONLINE</span>
+    <div style="margin-left:auto;display:flex;align-items:center;padding-right:4px">
+    <button class="hdr-btn" onclick="openCatManager()">⚙️</button>
+    <button class="hdr-btn" onclick="switchSec('lang')">🌐</button>
+    <button class="hdr-btn" onclick="switchSec('transfer')">📤</button>
+    <button class="hdr-btn" onclick="switchSec('help')">❓</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <!-- HOME -->
+    <div class="sec active" id="sec-home">
+      <div class="sec-t" style="font-size:180%;align-items:center"><img src="icon-192.png" style="width:1em;height:1em;border-radius:22%;vertical-align:middle;margin-right:6px"><span id="t-home">夢の地図</span></div>
+      <div id="home-cnt"></div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="sec" id="sec-tasks">
+      <div class="sec-t"><span>📋</span><span id="t-tasks">タスク</span></div>
+      <div class="card">
+        <div class="ct">✨ <span id="t-newtask">新しいタスク</span></div>
+        <div class="row"><input class="inp" id="new-task-inp" style="flex:1"/><button class="mic" id="mic-task">🎤</button></div>
+        <div class="vh" id="vh-task"></div>
+        <div id="cat-new-row" class="mt8" style="display:flex;flex-wrap:wrap;gap:4px"></div>
+        <button class="btn bp bw mt8" id="add-task-btn">＋ <span id="t-addtask">タスク追加</span></button>
+      </div>
+      <div class="card" style="padding:8px 11px"><div id="filter-row" style="display:flex;flex-wrap:wrap;gap:4px"></div></div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:#0e7490;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📋 <span id="t-task-list-label">タスク一覧</span></div>
+        <div id="task-list"></div>
+      </div>
+    </div>
+
+    <!-- MAP (プロジェクト一覧) -->
+    <div class="sec" id="sec-map">
+      <div class="sec-t"><span>🌐</span><span id="t-map">マインドマップ</span></div>
+      <div id="mm-list-area"></div>
+    </div>
+
+    <!-- SHOPPING -->
+    <div class="sec" id="sec-shop">
+      <div class="sec-t"><span>🛒</span><span id="t-shop">お買い物</span></div>
+      <div id="shop-cnt"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="sec" id="sec-cal">
+      <div class="sec-t"><span>📅</span><span id="t-cal">カレンダー</span></div>
+      <div class="card">
+        <div class="cal-hdr"><button class="cal-nv" id="cal-prev">◀</button><div class="cal-ml" id="cal-lbl"></div><button class="cal-nv" id="cal-next">▶</button></div>
+        <div class="cal-wd-r"><div class="cal-wd" style="color:#ef4444" id="wd0">日</div><div class="cal-wd" id="wd1">月</div><div class="cal-wd" id="wd2">火</div><div class="cal-wd" id="wd3">水</div><div class="cal-wd" id="wd4">木</div><div class="cal-wd" id="wd5">金</div><div class="cal-wd" style="color:#3b82f6" id="wd6">土</div></div>
+        <div class="cal-gr" id="cal-grid"></div>
+      </div>
+    </div>
+
+    <!-- HELP -->
+    <div class="sec" id="sec-help"><div class="sec-t"><span>❓</span><span id="t-help">ヘルプ</span></div><div id="help-content"></div></div>
+
+    <!-- TRANSFER -->
+    <div class="sec" id="sec-transfer">
+      <div class="sec-t"><span>📤</span><span id="t-transfer">データ転送</span></div>
+      <div class="xfer-section"><div class="ct" id="t-export-title">📥 エクスポート</div><p style="font-size:12px;color:#64748b;margin-bottom:9px" id="t-export-desc">データをファイルに保存してデバイス間で共有できます。</p><button class="btn bp bw" onclick="doExport()" id="t-export-btn">📁 ファイルとして保存</button></div>
+      <div class="xfer-section"><div class="ct" id="t-import-title">📤 インポート</div><p style="font-size:12px;color:#64748b;margin-bottom:9px" id="t-import-desc">保存したファイルを選択してデータを復元します。</p><input type="file" id="import-file" accept=".yume,.json" style="display:none" onchange="doImport(this)"/><button class="btn bp bw" onclick="document.getElementById('import-file').click()" id="t-import-btn">📂 ファイルを選択</button><div id="import-msg" style="font-size:12px;margin-top:8px;color:#10b981"></div></div>
+    </div>
+
+    <!-- LANG -->
+    <div class="sec" id="sec-lang"><div class="sec-t"><span>🌐</span><span id="t-lang">言語設定</span></div><div class="card"><div class="ct" id="t-lang-select">言語を選択してください</div><div class="lang-grid" id="lang-grid"></div></div></div>
+  </div>
+
+  <nav class="bnav">
+    <button class="nb active" data-s="home"><span class="ico">🏠</span><span id="nb-home">ホーム</span></button>
+    <button class="nb" data-s="tasks"><span class="ico">📋</span><span id="nb-tasks">タスク</span></button>
+    <button class="nb" data-s="map"><span class="ico">🗺️</span><span id="nb-map">マップ</span></button>
+    <button class="nb" data-s="shop"><span class="ico">🛒</span><span id="nb-shop">買い物</span></button>
+    <button class="nb" data-s="cal"><span class="ico">📅</span><span id="nb-cal">履歴</span></button>
+  </nav>
+</div>
+
+<!-- フローティングパネル（カテゴリ一覧） -->
+<div class="fov" id="float-overlay" onclick="closeFloat()"></div>
+<div class="fpanel" id="float-panel"><div class="fhandle"></div><div class="fhdr" id="float-header"></div><div class="fbody" id="float-body"></div></div>
+
+<!-- タスク詳細フローティング -->
+<div class="fov" id="task-float-overlay" onclick="closeTaskFloat()"></div>
+<div class="fpanel" id="task-float-panel" style="box-shadow:0 -8px 32px rgba(6,182,212,0.25);border-top:3px solid #06B6D4;">
+  <div class="fhandle" style="background:#06B6D4;width:60px;height:5px;margin:10px auto 8px;border-radius:3px;"></div>
+  <div style="padding:0 14px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #e0f2fe;margin-bottom:8px;background:linear-gradient(90deg,#f0fdff,#fff);">
+    <span style="font-size:16px;font-weight:700;color:#0e7490">📋 タスク詳細</span>
+    <button class="btn bg" onclick="closeTaskFloat()" style="font-size:20px;padding:10px 20px;border-radius:12px;background:#e0f2fe;color:#0e7490">✕ 閉じる</button>
+  </div>
+  <div style="padding:0 14px 24px;overflow-y:auto;max-height:65vh" id="task-float-body"></div>
+</div>
+
+<!-- マインドマップ フローティングキャンバス -->
+<div id="mm-float-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.6);" onclick="if(event.target===this)closeMmFloat()"></div>
+<div id="mm-float-panel" style="position:fixed;inset:0;z-index:301;background:#f8fdff;flex-direction:column;">
+  <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(90deg,#06B6D4,#06D6A0 55%,#FFD166);flex-shrink:0;">
+    <span id="mm-float-title" style="font-size:14px;font-weight:700;color:white;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    <select id="mm-layout-sel" style="font-size:11px;border:none;border-radius:8px;padding:3px 6px;background:rgba(255,255,255,0.9);color:#0e7490;font-family:inherit;cursor:pointer;" onchange="changeMmLayout(this.value)">
+      <option value="tree">🌳 ツリー型</option>
+      <option value="org">🏢 組織図型</option>
+      <option value="logic">🔷 ロジックツリー</option>
+      <option value="radial">🌐 放射状</option>
+    </select>
+    <button onclick="closeMmFloat()" style="background:rgba(255,255,255,0.25);border:1.5px solid rgba(255,255,255,0.6);color:white;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+  </div>
+  <!-- 修正3: フィット表示（スクロールなし・全体俯瞰） -->
+  <div id="mm-float-body" style="flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:8px;">
+    <svg id="mm-svg" style="display:block;max-width:100%;max-height:100%;"></svg>
+  </div>
+  <div style="padding:6px 14px;font-size:10px;color:#64748b;text-align:center;flex-shrink:0;">長押しでチェック ／ タップで詳細</div>
+</div>
+
+<!-- Modal -->
+<div class="ov" id="overlay" style="display:none" onclick="if(event.target===this)hideModal()">
+  <div class="mo" id="modal-body"></div>
+</div>
+<script>
+// ============================================================
+// 多言語定義（13言語）
+// ============================================================
+const LANGS={
+  ja:{code:'ja',name:'日本語',appName:'夢の地図',speechLang:'ja-JP',
+    home:'夢の地図',tasks:'タスク',map:'マップ',shop:'買い物',cal:'履歴',help:'ヘルプ',transfer:'データ転送',lang:'言語設定',
+    newtask:'新しいタスク',addtask:'タスク追加',catmgr:'カテゴリ管理',suggestLabel:'候補（直近順）：',
+    pending:'未購入',bought:'購入済み',noShop:'買い物リストは空です',
+    subAdd:'サブタスク追加',dueDate:'期限日',repeat:'繰り返し',
+    repeatNone:'繰り返しなし',daily:'毎日',weekly:'毎週',monthly:'毎月',yearly:'毎年',
+    done:'✅ 完了にする',undone:'🔄 未完了に戻す',del:'🗑',close:'✕',noTask:'タスクを追加しましょう！',
+    exportTitle:'📥 エクスポート',exportDesc:'ファイルに保存してデバイス間で共有できます。',exportBtn:'📁 ファイル保存',
+    importTitle:'📤 インポート',importDesc:'保存したファイルを選択して復元します。',importBtn:'📂 ファイル選択',
+    importOk:'✅ インポート完了！',importErr:'❌ 読み込み失敗。',langSelect:'言語を選択してください',
+    micOn:'● 録音中...',catFixed:'固定',catSave:'💾 保存',catCancel:'キャンセル',catAdd:'＋ 追加',
+    catNewPh:'カテゴリ名',catEmojiL:'絵文字：',catColorL:'カラー：',catPreview:'プレビュー：',
+    tapToList:'タップして一覧 →',tapToStart:'✨ タップして始める →',
+    apiKeySet:'✅ 暗号化して保存済み',apiKeyNotSet:'未設定（デモ）',
+    sketchTagline:'AIがあなたの夢をプロジェクト化（Llama）',sketchBadge:'🤖 AI機能',
+    dreamSketchTitle:'✨ 夢スケッチ',dreamSketchIntro:'あなたの興味や夢について教えてください！',
+    dreamRegisterBtn:'🚀 プロジェクトとして登録',dreamRegistered:'✅ タスクに登録しました！',
+    archiveTitle:'🏆 プロジェクト達成フォルダ',archiveEmpty:'達成プロジェクトはまだありません',
+    archiveMove:'達成フォルダへ移動',archiveRestore:'アクティブに戻す',archiveDelete:'完全削除',
+    mapOrder:'並び替え',
+    weekdays:['日','月','火','水','木','金','土'],
+    repeatNone:'繰り返しなし',
+    defCats:[
+      {id:'work',label:'仕事',icon:'💼',color:'#3b82f6'},
+      {id:'life',label:'生活',icon:'🍀',color:'#10b981'},
+      {id:'dream',label:'夢',icon:'🌟',color:'#f59e0b'},
+      {id:'sketch',label:'夢スケッチ',icon:'✨',color:'#8b5cf6',isSketch:true},
+    ],
+    helpQA:[
+      {q:'タスクの追加方法は？',a:'「タスク」画面でタスク名を入力し追加ボタンを押します。マイク🎤で音声入力も可能です。'},
+      {q:'AI機能（夢スケッチ）について',a:'Cloudflare Workers経由でLlama（meta-llama/llama-3.3-70b-instruct）を使用します。\nAPIキーはWorkerのSecret（環境変数）に安全に保管されており、アプリ内やGitHubには存在しません。'},
+      {q:'プロジェクト達成フォルダとは？',a:'マップ画面でプロジェクトを長押し→「達成フォルダへ」で移動できます。達成フォルダ内では保存継続や完全削除が可能です。'},
+      {q:'マインドマップの並び替えは？',a:'マップ画面の各プロジェクトカードの左端「☰」ハンドルをドラッグして上下に並び替えできます。'},
+      {q:'データを別のデバイスに移すには？',a:'「📤」ボタンからデータ転送画面を開き、ファイルを保存してクラウドやメールで共有できます。'},
+      {q:'このアプリについて',a:'タスク管理・マインドマップ・買い物リストを一体化したPWAアプリです。プロトタイプ版として開発中。'},
+    ],
+  },
+  en:{code:'en',name:'English',appName:'Dream Map',speechLang:'en-US',
+    home:'Home',tasks:'Tasks',map:'Map',shop:'Shopping',cal:'History',help:'Help',transfer:'Transfer',lang:'Language',
+    newtask:'New Task',addtask:'Add Task',catmgr:'Categories',suggestLabel:'Recent suggestions:',
+    pending:'Pending',bought:'Purchased',noShop:'Shopping list is empty',
+    subAdd:'Add Subtask',dueDate:'Due Date',repeat:'Repeat',
+    repeatNone:'No repeat',daily:'Daily',weekly:'Weekly',monthly:'Monthly',yearly:'Yearly',
+    done:'✅ Done',undone:'🔄 Undo',del:'🗑',close:'✕',noTask:'Add a task!',
+    exportTitle:'📥 Export',exportDesc:'Save data as a file to share.',exportBtn:'📁 Save File',
+    importTitle:'📤 Import',importDesc:'Select the saved file to restore.',importBtn:'📂 Select File',
+    importOk:'✅ Import successful!',importErr:'❌ Could not read file.',langSelect:'Select Language',
+    micOn:'● Recording...',catFixed:'Fixed',catSave:'💾 Save',catCancel:'Cancel',catAdd:'＋ Add',
+    catNewPh:'Category name',catEmojiL:'Emoji:',catColorL:'Color:',catPreview:'Preview:',
+    tapToList:'Tap to view →',tapToStart:'✨ Tap to start →',
+    apiKeySet:'✅ Encrypted & saved',apiKeyNotSet:'Not set (demo)',
+    sketchTagline:'AI turns your dreams into projects (Llama)',sketchBadge:'🤖 AI',
+    dreamSketchTitle:'✨ Dream Sketch',dreamSketchIntro:'Tell me about your interests and dreams!',
+    dreamRegisterBtn:'🚀 Register as Project',dreamRegistered:'✅ Added to tasks!',
+    archiveTitle:'🏆 Achieved Projects',archiveEmpty:'No achieved projects yet',
+    archiveMove:'Move to Archive',archiveRestore:'Restore Active',archiveDelete:'Delete Permanently',
+    mapOrder:'Reorder',
+    weekdays:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    defCats:[
+      {id:'work',label:'Work',icon:'💼',color:'#3b82f6'},
+      {id:'life',label:'Life',icon:'🍀',color:'#10b981'},
+      {id:'dream',label:'Dream',icon:'🌟',color:'#f59e0b'},
+      {id:'sketch',label:'Dream Sketch',icon:'✨',color:'#8b5cf6',isSketch:true},
+    ],
+    helpQA:[
+      {q:'How to add a task?',a:'Go to Tasks, type a name and tap Add. Use 🎤 for voice.'},
+      {q:"About AI (Dream Sketch)",a:"Uses Llama (meta-llama/llama-3.3-70b-instruct) via Cloudflare Workers.\nAPI key is stored securely in Worker Secrets — never in the app or GitHub."},
+      {q:'What is the Archive folder?',a:'Long-press a project card in Map → move to archive. In the archive you can restore or permanently delete.'},
+      {q:'How to reorder maps?',a:'Drag the ☰ handle on the left of each project card up or down.'},
+      {q:'How to transfer data?',a:'Tap 📤, save the file and share via cloud or email.'},
+      {q:'About this app',a:'A PWA integrating task management, mind mapping, and shopping lists.'},
+    ],
+  },
+  zh:{code:'zh',name:'中文',appName:'梦想地图',speechLang:'zh-CN',home:'首页',tasks:'任务',map:'思维导图',shop:'购物',cal:'历史',help:'帮助',transfer:'数据迁移',lang:'语言',newtask:'新任务',addtask:'添加',catmgr:'管理分类',suggestLabel:'最近建议：',pending:'未购买',bought:'已购买',noShop:'购物列表为空',subAdd:'添加子任务',dueDate:'截止日期',repeat:'重复',repeatNone:'不重复',daily:'每天',weekly:'每周',monthly:'每月',yearly:'每年',done:'✅ 完成',undone:'🔄 撤销',del:'🗑',close:'✕',noTask:'添加任务开始吧！',exportTitle:'📥 导出',exportDesc:'将数据保存为文件共享。',exportBtn:'📁 保存文件',importTitle:'📤 导入',importDesc:'选择保存的文件以恢复数据。',importBtn:'📂 选择文件',importOk:'✅ 导入成功！',importErr:'❌ 无法读取文件。',langSelect:'选择语言',micOn:'● 录音中...',catFixed:'固定',catSave:'💾 保存',catCancel:'取消',catAdd:'＋ 添加',catNewPh:'分类名称',catEmojiL:'表情：',catColorL:'颜色：',catPreview:'预览：',tapToList:'点击查看 →',tapToStart:'✨ 点击开始 →',apiKeySet:'✅ 已加密保存',apiKeyNotSet:'未设置（演示）',sketchTagline:'AI将您的梦想变为项目（无需密钥）',sketchBadge:'🤖 AI功能',dreamSketchTitle:'✨ 梦想草图',dreamSketchIntro:'告诉我您的兴趣和梦想！',dreamRegisterBtn:'🚀 注册为项目',dreamRegistered:'✅ 已添加到任务！',archiveTitle:'🏆 已完成项目',archiveEmpty:'暂无已完成项目',archiveMove:'移至归档',archiveRestore:'恢复活跃',archiveDelete:'永久删除',mapOrder:'排序',weekdays:['日','一','二','三','四','五','六'],defCats:[{id:'work',label:'工作',icon:'💼',color:'#3b82f6'},{id:'life',label:'生活',icon:'🍀',color:'#10b981'},{id:'dream',label:'梦想',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'梦想草图',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'如何添加任务？',a:'进入任务界面，输入名称并点击添加。'},{q:'AI功能如何使用？',a:'梦想草图使用Llama 3.3 70B通过Puter.js提供，完全免费。'},{q:'数据如何迁移？',a:'点击📤，保存文件并通过云盘或邮件分享。'}]},
+  ko:{code:'ko',name:'한국어',appName:'꿈의 지도',speechLang:'ko-KR',home:'홈',tasks:'할일',map:'마인드맵',shop:'쇼핑',cal:'기록',help:'도움말',transfer:'데이터전송',lang:'언어',newtask:'새 할일',addtask:'추가',catmgr:'카테고리',suggestLabel:'최근 추천:',pending:'미구매',bought:'구매완료',noShop:'쇼핑 목록이 비어있습니다',subAdd:'하위작업 추가',dueDate:'마감일',repeat:'반복',repeatNone:'반복 없음',daily:'매일',weekly:'매주',monthly:'매월',yearly:'매년',done:'✅ 완료',undone:'🔄 취소',del:'🗑',close:'✕',noTask:'할일을 추가해보세요!',exportTitle:'📥 내보내기',exportDesc:'파일로 저장하여 공유하세요.',exportBtn:'📁 파일 저장',importTitle:'📤 가져오기',importDesc:'저장된 파일을 선택하세요.',importBtn:'📂 파일 선택',importOk:'✅ 가져오기 완료!',importErr:'❌ 파일을 읽을 수 없습니다.',langSelect:'언어를 선택하세요',micOn:'● 녹음 중...',catFixed:'고정',catSave:'💾 저장',catCancel:'취소',catAdd:'＋ 추가',catNewPh:'카테고리 이름',catEmojiL:'이모지:',catColorL:'색상:',catPreview:'미리보기:',tapToList:'탭하여 목록 →',tapToStart:'✨ 탭하여 시작 →',apiKeySet:'✅ 암호화 저장됨',apiKeyNotSet:'미설정 (데모)',sketchTagline:'AI가 꿈을 프로젝트로 만들어드립니다',sketchBadge:'🤖 AI기능',dreamSketchTitle:'✨ 꿈 스케치',dreamSketchIntro:'관심사와 꿈에 대해 알려주세요!',dreamRegisterBtn:'🚀 프로젝트로 등록',dreamRegistered:'✅ 할일에 추가되었습니다!',archiveTitle:'🏆 달성 프로젝트',archiveEmpty:'달성한 프로젝트가 없습니다',archiveMove:'보관함으로',archiveRestore:'활성으로 복원',archiveDelete:'영구 삭제',mapOrder:'순서변경',weekdays:['일','월','화','수','목','금','토'],defCats:[{id:'work',label:'업무',icon:'💼',color:'#3b82f6'},{id:'life',label:'생활',icon:'🍀',color:'#10b981'},{id:'dream',label:'꿈',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'꿈 스케치',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'할일을 추가하려면?',a:'할일 화면에서 이름을 입력하고 추가를 누르세요.'},{q:'AI 기능은?',a:'Puter.js를 통해 Llama 3.3 70B를 사용합니다. 완전 무료.'},{q:'데이터를 이전하려면?',a:'📤 버튼을 눌러 파일로 저장한 후 공유하세요.'}]},
+  es:{code:'es',name:'Español',appName:'Mapa de Sueños',speechLang:'es-ES',home:'Inicio',tasks:'Tareas',map:'Mapa',shop:'Compras',cal:'Historial',help:'Ayuda',transfer:'Transferir',lang:'Idioma',newtask:'Nueva Tarea',addtask:'Agregar',catmgr:'Categorías',suggestLabel:'Sugerencias:',pending:'Pendiente',bought:'Comprado',noShop:'La lista está vacía',subAdd:'Agregar Subtarea',dueDate:'Fecha límite',repeat:'Repetir',repeatNone:'Sin repetición',daily:'Diario',weekly:'Semanal',monthly:'Mensual',yearly:'Anual',done:'✅ Completar',undone:'🔄 Deshacer',del:'🗑',close:'✕',noTask:'¡Agrega una tarea!',exportTitle:'📥 Exportar',exportDesc:'Guarda datos como archivo.',exportBtn:'📁 Guardar',importTitle:'📤 Importar',importDesc:'Selecciona el archivo guardado.',importBtn:'📂 Seleccionar',importOk:'✅ ¡Éxito!',importErr:'❌ Error.',langSelect:'Seleccionar Idioma',micOn:'● Grabando...',catFixed:'Fijo',catSave:'💾 Guardar',catCancel:'Cancelar',catAdd:'＋ Agregar',catNewPh:'Nombre',catEmojiL:'Emoji:',catColorL:'Color:',catPreview:'Vista previa:',tapToList:'Ver lista →',tapToStart:'✨ Empezar →',apiKeySet:'✅ Cifrado',apiKeyNotSet:'No config.',sketchTagline:'IA sin clave',sketchBadge:'🤖 IA',dreamSketchTitle:'✨ Boceto',dreamSketchIntro:'¡Cuéntame tus intereses!',dreamRegisterBtn:'🚀 Registrar',dreamRegistered:'✅ ¡Agregado!',archiveTitle:'🏆 Logros',archiveEmpty:'Sin proyectos logrados',archiveMove:'Archivar',archiveRestore:'Restaurar',archiveDelete:'Eliminar',mapOrder:'Reordenar',weekdays:['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],defCats:[{id:'work',label:'Trabajo',icon:'💼',color:'#3b82f6'},{id:'life',label:'Vida',icon:'🍀',color:'#10b981'},{id:'dream',label:'Sueño',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Boceto',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'¿Cómo agregar tarea?',a:'Ve a Tareas, escribe y toca Agregar.'},{q:'¿AI sin clave?',a:'Usa Llama 3.3 70B vía Puter.js (gratis).'}]},
+  pt:{code:'pt',name:'Português',appName:'Mapa dos Sonhos',speechLang:'pt-BR',home:'Início',tasks:'Tarefas',map:'Mapa',shop:'Compras',cal:'Histórico',help:'Ajuda',transfer:'Transferir',lang:'Idioma',newtask:'Nova Tarefa',addtask:'Adicionar',catmgr:'Categorias',suggestLabel:'Sugestões:',pending:'Pendente',bought:'Comprado',noShop:'Lista vazia',subAdd:'Subtarefa',dueDate:'Prazo',repeat:'Repetir',repeatNone:'Sem repetição',daily:'Diário',weekly:'Semanal',monthly:'Mensal',yearly:'Anual',done:'✅ Concluir',undone:'🔄 Desfazer',del:'🗑',close:'✕',noTask:'Adicione uma tarefa!',exportTitle:'📥 Exportar',exportDesc:'Salve dados como arquivo.',exportBtn:'📁 Salvar',importTitle:'📤 Importar',importDesc:'Selecione o arquivo.',importBtn:'📂 Selecionar',importOk:'✅ Concluído!',importErr:'❌ Erro.',langSelect:'Selecionar Idioma',micOn:'● Gravando...',catFixed:'Fixo',catSave:'💾 Salvar',catCancel:'Cancelar',catAdd:'＋ Adicionar',catNewPh:'Nome',catEmojiL:'Emoji:',catColorL:'Cor:',catPreview:'Prévia:',tapToList:'Ver →',tapToStart:'✨ Começar →',apiKeySet:'✅ Criptografado',apiKeyNotSet:'Não config.',sketchTagline:'IA sem chave',sketchBadge:'🤖 IA',dreamSketchTitle:'✨ Esboço',dreamSketchIntro:'Fale sobre seus sonhos!',dreamRegisterBtn:'🚀 Registrar',dreamRegistered:'✅ Adicionado!',archiveTitle:'🏆 Conquistas',archiveEmpty:'Sem projetos conquistas',archiveMove:'Arquivar',archiveRestore:'Restaurar',archiveDelete:'Excluir',mapOrder:'Reordenar',weekdays:['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],defCats:[{id:'work',label:'Trabalho',icon:'💼',color:'#3b82f6'},{id:'life',label:'Vida',icon:'🍀',color:'#10b981'},{id:'dream',label:'Sonho',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Esboço',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Como adicionar?',a:'Vá em Tarefas, escreva e toque Adicionar.'},{q:'IA sem chave?',a:'Usa Llama 3.3 70B via Puter.js (grátis).'}]},
+  de:{code:'de',name:'Deutsch',appName:'Traumkarte',speechLang:'de-DE',home:'Start',tasks:'Aufgaben',map:'Mindmap',shop:'Einkaufen',cal:'Verlauf',help:'Hilfe',transfer:'Übertragen',lang:'Sprache',newtask:'Neue Aufgabe',addtask:'Hinzufügen',catmgr:'Kategorien',suggestLabel:'Vorschläge:',pending:'Ausstehend',bought:'Gekauft',noShop:'Liste leer',subAdd:'Unteraufgabe',dueDate:'Fälligkeit',repeat:'Wiederholen',repeatNone:'Kein',daily:'Täglich',weekly:'Wöchentlich',monthly:'Monatlich',yearly:'Jährlich',done:'✅ Abschließen',undone:'🔄 Rückgängig',del:'🗑',close:'✕',noTask:'Aufgabe hinzufügen!',exportTitle:'📥 Exportieren',exportDesc:'Daten als Datei speichern.',exportBtn:'📁 Speichern',importTitle:'📤 Importieren',importDesc:'Gespeicherte Datei auswählen.',importBtn:'📂 Auswählen',importOk:'✅ Erfolgreich!',importErr:'❌ Fehler.',langSelect:'Sprache wählen',micOn:'● Aufnahme...',catFixed:'Fest',catSave:'💾 Speichern',catCancel:'Abbrechen',catAdd:'＋ Hinzufügen',catNewPh:'Name',catEmojiL:'Emoji:',catColorL:'Farbe:',catPreview:'Vorschau:',tapToList:'Liste →',tapToStart:'✨ Starten →',apiKeySet:'✅ Verschlüsselt',apiKeyNotSet:'Nicht gesetzt',sketchTagline:'KI ohne Schlüssel',sketchBadge:'🤖 KI',dreamSketchTitle:'✨ Traumskizze',dreamSketchIntro:'Erzähl von deinen Träumen!',dreamRegisterBtn:'🚀 Registrieren',dreamRegistered:'✅ Hinzugefügt!',archiveTitle:'🏆 Erreichte Projekte',archiveEmpty:'Keine erreichten Projekte',archiveMove:'Archivieren',archiveRestore:'Wiederherstellen',archiveDelete:'Löschen',mapOrder:'Sortieren',weekdays:['So','Mo','Di','Mi','Do','Fr','Sa'],defCats:[{id:'work',label:'Arbeit',icon:'💼',color:'#3b82f6'},{id:'life',label:'Leben',icon:'🍀',color:'#10b981'},{id:'dream',label:'Traum',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Traumskizze',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Aufgabe hinzufügen?',a:'Gehe zu Aufgaben, gib einen Namen ein.'},{q:'KI ohne Schlüssel?',a:'Nutzt Llama 3.3 70B via Puter.js (kostenlos).'}]},
+  ar:{code:'ar',name:'العربية',appName:'خريطة الأحلام',speechLang:'ar-SA',home:'الرئيسية',tasks:'المهام',map:'خريطة',shop:'تسوق',cal:'السجل',help:'مساعدة',transfer:'نقل',lang:'اللغة',newtask:'مهمة جديدة',addtask:'إضافة',catmgr:'الفئات',suggestLabel:'اقتراحات:',pending:'معلق',bought:'تم الشراء',noShop:'القائمة فارغة',subAdd:'مهمة فرعية',dueDate:'الاستحقاق',repeat:'تكرار',repeatNone:'لا',daily:'يومياً',weekly:'أسبوعياً',monthly:'شهرياً',yearly:'سنوياً',done:'✅ إنجاز',undone:'🔄 إلغاء',del:'🗑',close:'✕',noTask:'أضف مهمة!',exportTitle:'📥 تصدير',exportDesc:'احفظ البيانات كملف.',exportBtn:'📁 حفظ',importTitle:'📤 استيراد',importDesc:'اختر الملف المحفوظ.',importBtn:'📂 اختر',importOk:'✅ تم!',importErr:'❌ خطأ.',langSelect:'اختر اللغة',micOn:'● تسجيل...',catFixed:'ثابت',catSave:'💾 حفظ',catCancel:'إلغاء',catAdd:'＋ إضافة',catNewPh:'الاسم',catEmojiL:'رمز:',catColorL:'لون:',catPreview:'معاينة:',tapToList:'القائمة →',tapToStart:'✨ ابدأ →',apiKeySet:'✅ مشفر',apiKeyNotSet:'غير مضبوط',sketchTagline:'ذكاء اصطناعي مجاني',sketchBadge:'🤖 ذكاء',dreamSketchTitle:'✨ رسم الحلم',dreamSketchIntro:'أخبرني عن أحلامك!',dreamRegisterBtn:'🚀 تسجيل',dreamRegistered:'✅ تمت الإضافة!',archiveTitle:'🏆 المشاريع المنجزة',archiveEmpty:'لا توجد مشاريع منجزة',archiveMove:'للأرشيف',archiveRestore:'استعادة',archiveDelete:'حذف',mapOrder:'ترتيب',weekdays:['أح','إث','ثل','أر','خم','جم','سب'],defCats:[{id:'work',label:'عمل',icon:'💼',color:'#3b82f6'},{id:'life',label:'حياة',icon:'🍀',color:'#10b981'},{id:'dream',label:'حلم',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'رسم الحلم',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'كيف أضيف مهمة؟',a:'اذهب إلى المهام وأدخل الاسم.'},{q:'الذكاء الاصطناعي مجاني؟',a:'نعم، Llama 3.3 70B عبر Puter.js مجاناً.'}]},
+  ru:{code:'ru',name:'Русский',appName:'Карта Мечты',speechLang:'ru-RU',home:'Главная',tasks:'Задачи',map:'Карта',shop:'Покупки',cal:'История',help:'Помощь',transfer:'Перенос',lang:'Язык',newtask:'Новая задача',addtask:'Добавить',catmgr:'Категории',suggestLabel:'Предложения:',pending:'Не куплено',bought:'Куплено',noShop:'Список пуст',subAdd:'Подзадача',dueDate:'Срок',repeat:'Повтор',repeatNone:'Нет',daily:'Ежедневно',weekly:'Еженедельно',monthly:'Ежемесячно',yearly:'Ежегодно',done:'✅ Завершить',undone:'🔄 Отменить',del:'🗑',close:'✕',noTask:'Добавьте задачу!',exportTitle:'📥 Экспорт',exportDesc:'Сохраните данные как файл.',exportBtn:'📁 Сохранить',importTitle:'📤 Импорт',importDesc:'Выберите файл.',importBtn:'📂 Выбрать',importOk:'✅ Готово!',importErr:'❌ Ошибка.',langSelect:'Выберите язык',micOn:'● Запись...',catFixed:'Фикс.',catSave:'💾 Сохранить',catCancel:'Отмена',catAdd:'＋ Добавить',catNewPh:'Название',catEmojiL:'Эмодзи:',catColorL:'Цвет:',catPreview:'Просмотр:',tapToList:'Список →',tapToStart:'✨ Начать →',apiKeySet:'✅ Зашифровано',apiKeyNotSet:'Не установлен',sketchTagline:'ИИ без ключа',sketchBadge:'🤖 ИИ',dreamSketchTitle:'✨ Эскиз',dreamSketchIntro:'Расскажите о своих мечтах!',dreamRegisterBtn:'🚀 Зарегистрировать',dreamRegistered:'✅ Добавлено!',archiveTitle:'🏆 Завершённые проекты',archiveEmpty:'Нет завершённых проектов',archiveMove:'В архив',archiveRestore:'Восстановить',archiveDelete:'Удалить',mapOrder:'Сортировка',weekdays:['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],defCats:[{id:'work',label:'Работа',icon:'💼',color:'#3b82f6'},{id:'life',label:'Жизнь',icon:'🍀',color:'#10b981'},{id:'dream',label:'Мечта',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Эскиз',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Как добавить задачу?',a:'Перейдите в Задачи и введите название.'},{q:'ИИ без ключа?',a:'Да, Llama 3.3 70B через Puter.js бесплатно.'}]},
+  tl:{code:'tl',name:'Filipino',appName:'Mapa ng Pangarap',speechLang:'fil-PH',home:'Tahanan',tasks:'Gawain',map:'Mapa',shop:'Pamimili',cal:'Kasaysayan',help:'Tulong',transfer:'Ilipat',lang:'Wika',newtask:'Bagong Gawain',addtask:'Idagdag',catmgr:'Kategorya',suggestLabel:'Mungkahi:',pending:'Hindi pa',bought:'Nabili',noShop:'Walang laman',subAdd:'Subtask',dueDate:'Takdang Petsa',repeat:'Ulitin',repeatNone:'Wala',daily:'Araw-araw',weekly:'Lingguhan',monthly:'Buwanan',yearly:'Taon-taon',done:'✅ Tapos',undone:'🔄 Bawiin',del:'🗑',close:'✕',noTask:'Magdagdag ng gawain!',exportTitle:'📥 I-export',exportDesc:'I-save bilang file.',exportBtn:'📁 I-save',importTitle:'📤 I-import',importDesc:'Piliin ang file.',importBtn:'📂 Pumili',importOk:'✅ Matagumpay!',importErr:'❌ Error.',langSelect:'Pumili ng Wika',micOn:'● Nagre-record...',catFixed:'Nakatali',catSave:'💾 I-save',catCancel:'Kanselahin',catAdd:'＋ Idagdag',catNewPh:'Pangalan',catEmojiL:'Emoji:',catColorL:'Kulay:',catPreview:'Preview:',tapToList:'Listahan →',tapToStart:'✨ Magsimula →',apiKeySet:'✅ Naka-encrypt',apiKeyNotSet:'Hindi itinakda',sketchTagline:'AI libre, walang key',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ Sketch',dreamSketchIntro:'Sabihin ang iyong mga pangarap!',dreamRegisterBtn:'🚀 Irehistro',dreamRegistered:'✅ Naidagdag!',archiveTitle:'🏆 Natapos na Proyekto',archiveEmpty:'Walang natapos',archiveMove:'I-archive',archiveRestore:'Ibalik',archiveDelete:'Burahin',mapOrder:'Ayusin',weekdays:['Lin','Lun','Mar','Miy','Huw','Biy','Sab'],defCats:[{id:'work',label:'Trabaho',icon:'💼',color:'#3b82f6'},{id:'life',label:'Buhay',icon:'🍀',color:'#10b981'},{id:'dream',label:'Pangarap',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Sketch',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Paano magdagdag?',a:'Pumunta sa Gawain at i-type ang pangalan.'},{q:'AI libre?',a:'Oo, Llama 3.3 70B sa Puter.js (libre).'}]},
+  hi:{code:'hi',name:'हिन्दी',appName:'सपनों का नक्शा',speechLang:'hi-IN',home:'होम',tasks:'कार्य',map:'माइंडमैप',shop:'खरीदारी',cal:'इतिहास',help:'सहायता',transfer:'स्थानांतरण',lang:'भाषा',newtask:'नया कार्य',addtask:'जोड़ें',catmgr:'श्रेणियाँ',suggestLabel:'सुझाव:',pending:'बाकी',bought:'खरीदा',noShop:'सूची खाली',subAdd:'उप-कार्य',dueDate:'तारीख',repeat:'दोहराएं',repeatNone:'नहीं',daily:'प्रतिदिन',weekly:'साप्ताहिक',monthly:'मासिक',yearly:'वार्षिक',done:'✅ पूर्ण',undone:'🔄 वापस',del:'🗑',close:'✕',noTask:'कार्य जोड़ें!',exportTitle:'📥 निर्यात',exportDesc:'फ़ाइल के रूप में सहेजें।',exportBtn:'📁 सहेजें',importTitle:'📤 आयात',importDesc:'फ़ाइल चुनें।',importBtn:'📂 चुनें',importOk:'✅ सफल!',importErr:'❌ विफल।',langSelect:'भाषा चुनें',micOn:'● रिकॉर्डिंग...',catFixed:'निश्चित',catSave:'💾 सहेजें',catCancel:'रद्द',catAdd:'＋ जोड़ें',catNewPh:'नाम',catEmojiL:'इमोजी:',catColorL:'रंग:',catPreview:'पूर्वावलोकन:',tapToList:'सूची →',tapToStart:'✨ शुरू करें →',apiKeySet:'✅ एन्क्रिप्टेड',apiKeyNotSet:'सेट नहीं',sketchTagline:'AI मुफ़्त',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ स्केच',dreamSketchIntro:'अपने सपने बताएं!',dreamRegisterBtn:'🚀 पंजीकृत करें',dreamRegistered:'✅ जोड़ा!',archiveTitle:'🏆 पूर्ण परियोजनाएं',archiveEmpty:'कोई पूर्ण परियोजना नहीं',archiveMove:'संग्रह में',archiveRestore:'पुनर्स्थापित',archiveDelete:'हटाएं',mapOrder:'क्रम',weekdays:['रवि','सोम','मंग','बुध','गुरु','शुक्र','शनि'],defCats:[{id:'work',label:'काम',icon:'💼',color:'#3b82f6'},{id:'life',label:'जीवन',icon:'🍀',color:'#10b981'},{id:'dream',label:'सपना',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'स्केच',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'कार्य कैसे जोड़ें?',a:'कार्य स्क्रीन पर जाएं।'},{q:'AI मुफ़्त?',a:'हाँ, Puter.js के माध्यम से।'}]},
+  id:{code:'id',name:'Indonesia',appName:'Peta Impian',speechLang:'id-ID',home:'Beranda',tasks:'Tugas',map:'Peta Pikiran',shop:'Belanja',cal:'Riwayat',help:'Bantuan',transfer:'Transfer',lang:'Bahasa',newtask:'Tugas Baru',addtask:'Tambah',catmgr:'Kategori',suggestLabel:'Saran:',pending:'Belum dibeli',bought:'Sudah dibeli',noShop:'Daftar kosong',subAdd:'Subtugas',dueDate:'Batas Waktu',repeat:'Ulangi',repeatNone:'Tidak',daily:'Harian',weekly:'Mingguan',monthly:'Bulanan',yearly:'Tahunan',done:'✅ Selesai',undone:'🔄 Batalkan',del:'🗑',close:'✕',noTask:'Tambahkan tugas!',exportTitle:'📥 Ekspor',exportDesc:'Simpan data sebagai file.',exportBtn:'📁 Simpan',importTitle:'📤 Impor',importDesc:'Pilih file.',importBtn:'📂 Pilih',importOk:'✅ Berhasil!',importErr:'❌ Gagal.',langSelect:'Pilih Bahasa',micOn:'● Merekam...',catFixed:'Tetap',catSave:'💾 Simpan',catCancel:'Batal',catAdd:'＋ Tambah',catNewPh:'Nama',catEmojiL:'Emoji:',catColorL:'Warna:',catPreview:'Pratinjau:',tapToList:'Daftar →',tapToStart:'✨ Mulai →',apiKeySet:'✅ Terenkripsi',apiKeyNotSet:'Belum diatur',sketchTagline:'AI gratis, tanpa key',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ Sketsa',dreamSketchIntro:'Ceritakan impianmu!',dreamRegisterBtn:'🚀 Daftarkan',dreamRegistered:'✅ Ditambahkan!',archiveTitle:'🏆 Proyek Selesai',archiveEmpty:'Belum ada proyek selesai',archiveMove:'Arsipkan',archiveRestore:'Pulihkan',archiveDelete:'Hapus',mapOrder:'Urutkan',weekdays:['Min','Sen','Sel','Rab','Kam','Jum','Sab'],defCats:[{id:'work',label:'Kerja',icon:'💼',color:'#3b82f6'},{id:'life',label:'Hidup',icon:'🍀',color:'#10b981'},{id:'dream',label:'Impian',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Sketsa',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Cara menambah tugas?',a:'Buka Tugas dan ketik nama.'},{q:'AI gratis?',a:'Ya, Llama 3.3 70B via Puter.js (gratis).'}]},
+  ur:{code:'ur',name:'اردو',appName:'خوابوں کا نقشہ',speechLang:'ur-PK',home:'ہوم',tasks:'کام',map:'ذہنی نقشہ',shop:'خریداری',cal:'تاریخ',help:'مدد',transfer:'منتقلی',lang:'زبان',newtask:'نیا کام',addtask:'شامل',catmgr:'زمرے',suggestLabel:'تجاویز:',pending:'باقی',bought:'خریدا',noShop:'فہرست خالی',subAdd:'ذیلی کام',dueDate:'آخری تاریخ',repeat:'دہرائیں',repeatNone:'نہیں',daily:'روزانہ',weekly:'ہفتہ وار',monthly:'ماہانہ',yearly:'سالانہ',done:'✅ مکمل',undone:'🔄 واپس',del:'🗑',close:'✕',noTask:'کام شامل کریں!',exportTitle:'📥 برآمد',exportDesc:'فائل کے طور پر محفوظ کریں۔',exportBtn:'📁 محفوظ',importTitle:'📤 درآمد',importDesc:'فائل منتخب کریں۔',importBtn:'📂 منتخب',importOk:'✅ کامیاب!',importErr:'❌ ناکام۔',langSelect:'زبان منتخب',micOn:'● ریکارڈنگ...',catFixed:'مقررہ',catSave:'💾 محفوظ',catCancel:'منسوخ',catAdd:'＋ شامل',catNewPh:'نام',catEmojiL:'ایموجی:',catColorL:'رنگ:',catPreview:'پیش نظارہ:',tapToList:'فہرست →',tapToStart:'✨ شروع →',apiKeySet:'✅ خفیہ',apiKeyNotSet:'سیٹ نہیں',sketchTagline:'AI مفت',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ اسکیچ',dreamSketchIntro:'اپنے خواب بتائیں!',dreamRegisterBtn:'🚀 درج کریں',dreamRegistered:'✅ شامل ہوگیا!',archiveTitle:'🏆 مکمل منصوبے',archiveEmpty:'کوئی مکمل منصوبہ نہیں',archiveMove:'محفوظ کریں',archiveRestore:'بحال کریں',archiveDelete:'حذف کریں',mapOrder:'ترتیب',weekdays:['اتوار','پیر','منگل','بدھ','جمعرات','جمعہ','ہفتہ'],defCats:[{id:'work',label:'کام',icon:'💼',color:'#3b82f6'},{id:'life',label:'زندگی',icon:'🍀',color:'#10b981'},{id:'dream',label:'خواب',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'اسکیچ',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'کام کیسے شامل کریں؟',a:'کام کی اسکرین پر جائیں۔'},{q:'AI مفت ہے؟',a:'ہاں، Puter.js کے ذریعے مفت۔'}]},
+};
+
+// ============================================================
+// 定数・ユーティリティ
+// ============================================================
+const SK='yume_v15w';
+const EMOJIS=['💼','🏠','🌟','🎵','🎨','📚','💪','🍳','✈️','🌿','🎯','💡','🔥','🌈','🎸','📸','🏃','🧘','🌙','🐾','🎭','💰','🏆','🌸','🦋','🎤','🎬','🛠️','🌍','❤️'];
+const COLORS=['#3b82f6','#10b981','#f59e0b','#EF476F','#8b5cf6','#06B6D4','#f97316','#84cc16','#ec4899','#14b8a6','#6366f1','#a16207','#0891b2','#be185d','#15803d'];
+const FIXED=['work','life','dream','sketch'];
+const TODAY=()=>new Date().toISOString().slice(0,10);
+const uid=()=>Date.now()+Math.floor(Math.random()*9999);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const catBg=c=>c+'18';
+const L=()=>LANGS[curLang]||LANGS.ja;
+
+// ============================================================
+// データ管理
+// ============================================================
+function load(){
+  // 現バージョン
+  try{const d=JSON.parse(localStorage.getItem(SK));if(d?.tasks){d.lang=d.lang||'ja';return d;}}catch{}
+  // 旧バージョン引き継ぎ（v5〜v13）
+  for(const k of['yume_v13','yume_v12','yume_v11','yume_v10','yume_v9','yume_v8']){
+    try{const d=JSON.parse(localStorage.getItem(k));if(d?.tasks){d.lang=d.lang||'ja';localStorage.setItem(SK,JSON.stringify(d));return d;}}catch{}
+  }
+  return{lang:'ja',categories:LANGS.ja.defCats,mapOrder:[],archived:[],tasks:[
+    {id:1,title:'🌟 夢の実現プロジェクト',parentId:null,category:'dream',done:false,children:[2,3],shopping:[],createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'},
+    {id:2,title:'音楽活動を広げる',parentId:1,category:'dream',done:false,children:[],shopping:[{id:9901,item:'録音用マイク',done:false}],createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'},
+    {id:3,title:'レコーディング環境整備',parentId:1,category:'dream',done:false,children:[],shopping:[],createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'},
+  ],pastIngredients:['鶏むね肉','豚バラ','玉ねぎ','にんじん','じゃがいも','トマト缶','醤油','みりん','料理酒','オリーブオイル']};
+}
+function save(){localStorage.setItem(SK,JSON.stringify(D));}
+
+let D=load();
+let curLang=D.lang||'ja';
+// mapOrder: プロジェクトの表示順（rootId配列）
+if(!D.mapOrder)D.mapOrder=[];
+// archived: 達成フォルダ（{id, title, archivedAt, tasks配列}）
+if(!D.archived)D.archived=[];
+
+function syncCatLabels(){
+  const l=L(),defMap=Object.fromEntries(l.defCats.map(c=>[c.id,c]));
+  if(!D.categories?.length)D.categories=[...l.defCats];
+  if(!D.categories.some(c=>c.id==='sketch'))D.categories.push({...defMap.sketch});
+  D.categories=D.categories.map(c=>defMap[c.id]?{...c,...defMap[c.id],isSketch:!!defMap[c.id].isSketch}:c);
+}
+
+const tmap=()=>Object.fromEntries(D.tasks.map(t=>[t.id,t]));
+const cmap=()=>Object.fromEntries((D.categories||L().defCats).map(c=>[c.id,c]));
+
+let curSec='home',selId=null,filterCat='all',newCat='dream';
+
+// ヘッダー日付とオンライン状態
+function updateHdrStatus(){
+  const d=new Date();
+  const dateStr=`　'${String(d.getFullYear()).slice(2)}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+  const el=document.getElementById('hdr-date');
+  if(el)el.textContent=dateStr;
+  const st=document.getElementById('hdr-status');
+  if(st){
+    const online=navigator.onLine;
+    st.textContent=online?'ONLINE':'OFFLINE';
+    st.style.background=online?'#d1fae5':'#fee2e2';
+    st.style.color=online?'#065f46':'#991b1b';
+  }
+}
+window.addEventListener('online',updateHdrStatus);
+window.addEventListener('offline',updateHdrStatus);
+setInterval(updateHdrStatus,30000);
+document.addEventListener('DOMContentLoaded',updateHdrStatus);
+let expandedTasks=new Set();
+let calMonth=new Date(),recognition=null,micTarget=null;
+let dreamHistory=[];
+
+// ============================================================
+// 言語
+// ============================================================
+function applyLang(code){
+  curLang=code;D.lang=code;syncCatLabels();save();
+  const l=L();
+  const appTitleEl=document.getElementById('app-title');if(appTitleEl)appTitleEl.textContent=l.appName;
+  document.title=l.appName;
+  document.documentElement.lang=code;
+  // ナビ・セクションタイトル
+  const ids={home:'t-home',tasks:'t-tasks',map:'t-map',shop:'t-shop',cal:'t-cal',help:'t-help',transfer:'t-transfer',lang:'t-lang',newtask:'t-newtask',addtask:'t-addtask'};
+  Object.entries(ids).forEach(([k,id])=>{const el=document.getElementById(id);if(el)el.textContent=l[k]||'';});
+  ['home','tasks','map','shop','cal'].forEach(s=>{const el=document.getElementById('nb-'+s);if(el)el.textContent=l[s]||'';});
+  // 曜日
+  l.weekdays?.forEach((w,i)=>{const el=document.getElementById('wd'+i);if(el)el.textContent=w;});
+  renderLangGrid();
+  render();
+}
+function renderLangGrid(){
+  document.getElementById('lang-grid').innerHTML=Object.values(LANGS).map(l=>`<button class="lang-btn${curLang===l.code?' active':''}" onclick="applyLang('${l.code}')">${l.name}</button>`).join('');
+}
+
+// ============================================================
+// タスク操作
+// ============================================================
+function addTask(title,parentId,cat,extra={}){
+  const t={id:uid(),title,parentId:parentId??null,category:cat,done:false,children:[],shopping:[],createdAt:new Date().toISOString(),doneAt:null,dueDate:extra.dueDate||null,repeat:extra.repeat||'none'};
+  D.tasks.push(t);
+  if(parentId!=null){const p=tmap()[parentId];if(p)p.children=[...(p.children||[]),t.id];}
+  save();return t;
+}
+function nextDue(d,r){
+  if(!d||r==='none')return d;
+  const dt=new Date(d);
+  ({daily:()=>dt.setDate(dt.getDate()+1),weekly:()=>dt.setDate(dt.getDate()+7),monthly:()=>dt.setMonth(dt.getMonth()+1),yearly:()=>dt.setFullYear(dt.getFullYear()+1)}[r]||(() => {}))();
+  return dt.toISOString().slice(0,10);
+}
+function toggleDoneRepeat(id){
+  const t=tmap()[id];if(!t)return;
+  t.done=!t.done;t.doneAt=t.done?new Date().toISOString():null;
+  if(t.done&&t.repeat!=='none'&&t.dueDate)addTask(t.title,t.parentId,t.category,{dueDate:nextDue(t.dueDate,t.repeat),repeat:t.repeat});
+  save();if(document.getElementById('task-float-panel')?.classList.contains('open')){renderTaskFloat();renderTaskList();}else{render();}
+}
+function deleteTask(id){
+  const col=id=>{const t=tmap()[id];return t?[id,...(t.children||[]).flatMap(col)]:[id];};
+  const del=new Set(col(id));
+  D.tasks=D.tasks.filter(t=>!del.has(t.id)).map(t=>({...t,children:(t.children||[]).filter(c=>!del.has(c))}));
+  if(del.has(selId))selId=null;
+  save();if(document.getElementById('task-float-panel')?.classList.contains('open')){renderTaskFloat();renderTaskList();}else{render();}
+}
+function addShop(taskId,item){
+  if(!item.trim())return;
+  const t=tmap()[taskId];if(!t)return;
+  t.shopping=[...(t.shopping||[]),{id:uid(),item,done:false}];
+  D.pastIngredients=[item,...D.pastIngredients.filter(x=>x!==item)].slice(0,30);
+  save();
+}
+function toggleShop(taskId,shopId){const t=tmap()[taskId];if(!t)return;const s=t.shopping.find(x=>x.id===shopId);if(s)s.done=!s.done;save();render();}
+function delShop(taskId,shopId){const t=tmap()[taskId];if(!t)return;t.shopping=t.shopping.filter(x=>x.id!==shopId);save();render();}
+
+// ============================================================
+// エクスポート / インポート
+// ============================================================
+function doExport(){
+  const json=JSON.stringify(D,null,2),name=`yume-${TODAY().replace(/-/g,'')}.yume`;
+  try{
+    const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([json],{type:'application/json'})),download:name,style:'display:none'});
+    document.body.appendChild(a);setTimeout(()=>{a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(a.href)},200)},100);
+    const btn=document.getElementById('t-export-btn');if(btn){const o=btn.textContent;btn.textContent='✅ 保存しました';setTimeout(()=>btn.textContent=o,2500);}
+  }catch{
+    navigator.clipboard?.writeText(json).then(()=>alert('クリップボードにコピーしました。'));
+  }
+}
+function doImport(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const p=JSON.parse(ev.target.result);
+      if(!p.tasks)throw 0;
+      if(!confirm(L().importOk+'に上書きしますか？'))return;
+      Object.assign(D,p);if(!D.mapOrder)D.mapOrder=[];if(!D.archived)D.archived=[];
+      curLang=D.lang||'ja';syncCatLabels();save();
+      document.getElementById('import-msg').textContent=L().importOk;
+      applyLang(curLang);
+    }catch{document.getElementById('import-msg').textContent=L().importErr;}
+    input.value='';
+  };
+  r.readAsText(f);
+}
+
+// ============================================================
+// 音声入力
+// ============================================================
+const getMicBtn=t=>document.getElementById('mic-'+t);
+const getVh=t=>document.getElementById('vh-'+t);
+const getInp=t=>({task:document.getElementById('new-task-inp'),shop:document.getElementById('shop-inp'),child:document.getElementById('child-inp')}[t]);
+function micOff(t){getMicBtn(t)?.classList.remove('on');const h=getVh(t);if(h)h.textContent='';}
+function startVoice(target){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){alert('Chrome/Edgeが必要です');return;}
+  if(recognition){recognition.stop();recognition=null;micOff(micTarget);if(micTarget===target)return;}
+  micTarget=target;
+  const rec=new SR();rec.lang=L().speechLang||'ja-JP';rec.interimResults=false;
+  rec.onstart=()=>getMicBtn(target)?.classList.add('on');
+  rec.onresult=e=>{const t=e.results[0][0].transcript;const inp=getInp(target);if(inp)inp.value=t;micOff(target);};
+  rec.onend=()=>{recognition=null;micOff(target);};
+  rec.onerror=()=>{recognition=null;micOff(target);};
+  try{rec.start();recognition=rec;}catch{micOff(target);}
+}
+
+// ============================================================
+// ナビ / セクション切替
+// ============================================================
+function switchSec(s,push=true){
+  // タスク詳細が開いていたら閉じる
+  const tf=document.getElementById('task-float-panel');
+  if(tf?.classList.contains('open'))closeTaskFloat();
+  curSec=s;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('active',b.dataset.s===s));
+  document.querySelectorAll('.sec').forEach(sec=>sec.classList.toggle('active',sec.id==='sec-'+s));
+  if(push){try{history.pushState({sec:s,sid:selId},'',location.href.split('#')[0]+'#'+s);}catch(e){}}
+  render();
+}
+window.addEventListener('popstate',e=>{
+  const close=(id,fn)=>{const el=document.getElementById(id);if(el?.classList.contains('open')){fn();history.pushState(null,'',location.href);return true;}return false;};
+  if(close('mm-float-panel',closeMmFloat))return;
+  if(close('task-float-panel',closeTaskFloat))return;
+  if(document.getElementById('overlay')?.style.display!=='none'){hideModal();history.pushState(null,'',location.href);return;}
+  if(close('float-panel',closeFloat))return;
+  if(selId&&curSec==='home'){selId=null;render();history.pushState(null,'',location.href);return;}
+  if(curSec!=='home'){switchSec('home',false);}
+});
+
+// ============================================================
+// モーダル
+// ============================================================
+function showModal(html,cb){document.getElementById('modal-body').innerHTML=html;document.getElementById('overlay').style.display='flex';if(cb)cb();}
+function hideModal(){document.getElementById('overlay').style.display='none';}
+
+// ============================================================
+// フローティング（カテゴリ一覧）
+// ============================================================
+function openFloat(catId){
+  const cat=cmap()[catId],tm=tmap(),l=L();if(!cat)return;
+  const tasks=D.tasks.filter(t=>t.category===catId&&!t.parentId);
+  document.getElementById('float-header').innerHTML=`<span style="font-size:20px">${cat.icon}</span><span style="font-size:14px;font-weight:700;color:${cat.color};flex:1">${cat.label}</span><span style="font-size:10px;color:#64748b">${tasks.filter(t=>t.done).length}/${tasks.length}</span><button class="bic" onclick="closeFloat()">✕</button>`;
+  let h=tasks.length?'':'<div class="emp"><div class="emp-e">🌱</div></div>';
+  tasks.forEach(t=>{
+    const sc=(t.shopping||[]).filter(s=>!s.done).length,ch=(t.children||[]).length;
+    h+=`<div class="fti" onclick="closeFloat();selId=${t.id};switchSec('home')">
+      <div class="chk${t.done?' dn':''}" onclick="event.stopPropagation();toggleDoneRepeat(${t.id})">${t.done?'✓':''}</div>
+      <div style="flex:1;min-width:0"><div class="tl${t.done?' dn':''}">${esc(t.title)}</div>
+      <div style="font-size:10px;color:#64748b;display:flex;gap:8px;margin-top:2px">${ch?'🌿'+ch:''}${sc?'🛒'+sc:''}${t.dueDate?'📅'+t.dueDate:''}</div>
+      ${ch?`<div class="pb"><div class="pf" style="width:${(t.children||[]).filter(c=>tm[c]?.done).length/ch*100}%"></div></div>`:''}</div>
+      <span style="color:#94a3b8">›</span></div>`;
+  });
+  h+=`<button class="btn bp bw mt8" onclick="closeFloat();newCat='${catId}';switchSec('tasks')">＋ ${l.addtask}</button>`;
+  document.getElementById('float-body').innerHTML=h;
+  document.getElementById('float-overlay').classList.add('open');
+  document.getElementById('float-panel').classList.add('open');
+}
+function closeFloat(){
+  document.getElementById('float-overlay').classList.remove('open');
+  document.getElementById('float-panel').classList.remove('open');
+}
+
+// ============================================================
+// タスク詳細フローティング（タスク一覧からタップ）
+// ============================================================
+function toggleExpand(id){expandedTasks.has(id)?expandedTasks.delete(id):expandedTasks.add(id);renderTaskList();}
+function openTaskFloat(id){selId=id;closeFloat();renderTaskFloat();document.getElementById('task-float-overlay').classList.add('open');document.getElementById('task-float-panel').classList.add('open');}
+function closeTaskFloat(){document.getElementById('task-float-overlay').classList.remove('open');document.getElementById('task-float-panel').classList.remove('open');selId=null;renderTaskList();}
+function renderTaskFloat(){
+  const body=document.getElementById('task-float-body');if(!body)return;
+  const tm=tmap(),cm=cmap(),l=L(),sel=selId?tm[selId]:null;
+  if(!sel){body.innerHTML='';return;}
+  const cat=cm[sel.category]||{icon:'🎯',color:'#06B6D4',label:''},cn=sel.children||[],dn=cn.filter(c=>tm[c]?.done).length;
+  const repLbl={none:l.repeatNone,daily:l.daily,weekly:l.weekly,monthly:l.monthly,yearly:l.yearly};
+  let h=`<div style="border-left:4px solid ${cat.color};padding-left:10px;margin-bottom:12px">
+    <div style="font-size:15px;font-weight:700;color:#0e7490">${esc(sel.title)}</div>
+    <span class="tbg" style="background:${catBg(cat.color)};color:${cat.color}">${esc(cat.label)}</span>
+    ${cn.length?`<div class="pb" style="margin-top:6px"><div class="pf" style="width:${dn/cn.length*100}%"></div></div><div style="font-size:9px;color:#64748b">${dn}/${cn.length}</div>`:''}
+    ${sel.dueDate||sel.repeat!=='none'?`<div style="font-size:10px;color:#0e7490;margin-top:4px;display:flex;gap:7px">${sel.dueDate?`<span>📅${sel.dueDate}</span>`:''}${sel.repeat!=='none'?`<span>🔁${repLbl[sel.repeat]||sel.repeat}</span>`:''}</div>`:''}
+  </div>
+  <div class="row" style="gap:5px;margin-bottom:12px;flex-wrap:wrap">
+    ${sel.done?`<button class="btn bs" style="flex:1;background:#d1fae5;color:#065f46" onclick="toggleDoneRepeat(${sel.id});renderTaskFloat();renderTaskList()">✅ ${l.undone}</button>`:`<button class="btn bp bs" style="flex:1" onclick="toggleDoneRepeat(${sel.id});renderTaskFloat();renderTaskList()">${l.done}</button>`}
+    <button class="btn bd bs" onclick="if(confirm('削除しますか？')){deleteTask(${sel.id});closeTaskFloat()}">${l.del}</button>
+  </div>
+  <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:8px">🌿 ${l.subAdd}</div>`;
+  cn.forEach(cid=>{const c=tm[cid];if(!c)return;
+    h+=`<div class="ti${c.done?' di':''}" onclick="selId=${c.id};renderTaskFloat()">
+      ${c.done?`<div onclick="event.stopPropagation();toggleDoneRepeat(${c.id});renderTaskFloat();renderTaskList()" style="width:20px;height:20px;border-radius:50%;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:#10b981;border:2px solid #10b981;color:white;font-size:10px;font-weight:700">✓</div>`:`<div style="width:20px;flex-shrink:0"></div>`}
+      <div style="flex:1;min-width:0"><span class="tl${c.done?' dn':''}">${esc(c.title)}</span>${c.dueDate?`<div style="font-size:9px;color:#64748b">📅${c.dueDate}</div>`:''}</div>
+    </div>`;
+  });
+  if(!cn.length)h+=`<div style="color:#9ca3af;font-size:12px;margin-bottom:8px">${l.noTask}</div>`;
+  h+=`<button class="btn bp bs bw" style="margin-bottom:14px" onclick="openAddChild(${sel.id});closeTaskFloat()">＋ ${l.subAdd}</button>`;
+  h+=`<div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:8px">🛒 ${l.shop||'買い物'}</div>`;
+  (sel.shopping||[]).forEach(s=>{
+    h+=`<div class="si"><div class="chk${s.done?' dn':''}" onclick="toggleShop(${sel.id},${s.id});renderTaskFloat()">${s.done?'✓':''}</div><span style="flex:1;font-size:12px" class="${s.done?'sd':''}">${esc(s.item)}</span><a href="https://www.google.com/search?q=${encodeURIComponent(s.item)}" target="_blank" class="sl">🔍</a><button class="bic" onclick="delShop(${sel.id},${s.id});renderTaskFloat()">${l.del}</button></div>`;
+  });
+  h+=`<div class="row mt8"><input class="inp" id="tf-shop-inp" placeholder="その他（自由に記載ください）" style="flex:1"/><button class="btn bp bs" onclick="const v=document.getElementById('tf-shop-inp').value.trim();if(v){addShop(${sel.id},v);document.getElementById('tf-shop-inp').value='';renderTaskFloat()}">＋</button></div>`;
+  body.innerHTML=h;
+}
+
+// ============================================================
+// ============================================================
+// AI: Llama (meta-llama/llama-3.3-70b-instruct) — Cloudflare Workers経由
+// APIキーはWorkerの環境変数（Secret）に隠れている
+// フロントエンドにもGitHubにもキーは存在しない
+// ============================================================
+
+// Worker のURL
+const WORKER_BASE = 'https://yumechizu-ai.arimitsuru.workers.dev';
+const WORKER_CHAT_URL    = WORKER_BASE + '/api/chat';
+const WORKER_INSIGHT_URL = WORKER_BASE + '/insight';
+
+// ============================================================
+// /insight エンドポイント: テキストを渡してタスク自動生成
+// ============================================================
+async function callInsight(text){
+  try{
+    const res=await fetch(WORKER_INSIGHT_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({text})
+    });
+    if(!res.ok){const e=await res.json().catch(()=>({}));return{error:e.error||res.status};}
+    return await res.json();
+  }catch(e){
+    return{error:'ネットワークエラー: '+e.message};
+  }
+}
+
+// ============================================================
+// /api/chat エンドポイント: 夢スケッチ用チャット
+// ============================================================
+async function callAI(messages){
+  const l=L();
+  const demoC={ja:['音楽・アート','スキルアップ','旅行・冒険','健康'],en:['Music','Skills','Travel','Health'],zh:['音乐','技能','旅行','健康'],ko:['음악','스킬','여행','건강'],es:['Música','Habilidades','Viaje','Salud'],pt:['Música','Habilidades','Viagem','Saúde'],de:['Musik','Fähigkeiten','Reisen','Gesundheit'],ar:['الموسيقى','المهارات','السفر','الصحة'],ru:['Музыка','Навыки','Путешествия','Здоровье'],tl:['Musika','Kasanayan','Paglalakbay','Kalusugan'],hi:['संगीत','कौशल','यात्रा','स्वास्थ्य'],id:['Musik','Keahlian','Perjalanan','Kesehatan'],ur:['موسیقی','مہارت','سفر','صحت']};
+  const choices=demoC[l.code]||demoC.en;
+  const langNames={ja:'Japanese',en:'English',zh:'Chinese',ko:'Korean',es:'Spanish',pt:'Portuguese',de:'German',ar:'Arabic',ru:'Russian',tl:'Filipino',hi:'Hindi',id:'Indonesian',ur:'Urdu'};
+
+  const sys=`You are a Dream Sketch AI. Help users turn dreams into projects.
+CRITICAL: You MUST respond ONLY in ${langNames[l.code]||'English'}. NEVER mix in Chinese, Korean, or any other language. If language is Japanese, use only standard Japanese kanji (JIS level 1-2). Every single word must be in ${langNames[l.code]||'English'}.
+Rules: EXACTLY 3 rounds of questions before proposing project. Round1: ask broad interests. Round2: narrow down. Round3: ask more details. Then propose project(name,3-5 tasks,shopping list).
+Show 4 short choices.
+ALWAYS reply JSON only. No extra text outside JSON.
+Label each choice with A. B. C. D. prefix. User can combine choices like 'A and B'.
+{"message":"...","choices":["A. option1","B. option2","C. option3","D. option4"],"project":null}
+When proposing project: {"message":"...","choices":[],"project":{"name":"...","tasks":["t1","t2","t3"],"shopping":["s1"]}}`;
+
+  // Worker(/api/chat)が期待するフォーマット:
+  //   { system: "...", messages: [{role, content}, ...] }
+  // レスポンス: { data: { reply: "..." } }
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),15000);// 15秒タイムアウト
+    const res=await fetch(WORKER_CHAT_URL,{signal:controller.signal,
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        messages:[{role:'system',content:sys},...messages.map(m=>({
+          role:m.role==='assistant'?'assistant':'user',
+          content:typeof m.content==='string'?m.content:JSON.stringify(m.content)
+        }))]
+      })
+    });
+
+    if(!res.ok){
+      const err=await res.json().catch(()=>({error:'Unknown error'}));
+      return{message:'❌ Worker error: '+(err.error||res.status),choices,project:null};
+    }
+
+    clearTimeout(timeout);
+    const data=await res.json();
+
+    if(data.error){
+      return{message:'❌ AI error: '+(data.error||'Unknown'),choices,project:null};
+    }
+
+    // Worker レスポンス形式: { data: { reply: "..." } }
+    const raw=typeof data?.response==='string'?data.response:(data?.response?.response??JSON.stringify(data?.response??''));const txt=raw.replace(/```[a-z]*\n?[\s\S]*?```/g,'').trim();
+    if(!txt) return{message:'（応答なし）',choices,project:null};
+
+    try{return JSON.parse(txt);}
+    catch{
+      // 壊れたJSONを修復して再試行
+      try{
+        const fixed=txt
+          .replace(/,\s*}/g,'}')
+          .replace(/,\s*]/g,']')
+          .replace(/([^\\])"([^"]*?)(?=[},\]])/g,'$1"$2"')
+          .replace(/}}{1,}/g,'}')
+          .replace(/]{1,}}{1,}/g,']}');
+        return JSON.parse(fixed);
+      }catch{return{message:txt,choices,project:null};}
+    }
+
+  }catch(e){
+    return{
+      message:(l.code==='ja'
+        ?'⚠️ AI接続エラー。\nWorkerのURLとネットワークを確認してください。\nデモ：'
+        :'⚠️ Cannot reach Worker. Check URL & network.\nDemo: '
+      )+choices.join('・'),
+      choices,project:null
+    };
+  }
+}
+async function sendDreamMessage(msg){
+  if(!msg.trim())return;
+  dreamHistory.push({role:'user',content:msg});
+  renderDreamChat(true);
+  if(window._dreamTimeout){clearTimeout(window._dreamTimeout);window._dreamTimeout=null;}
+  const res=await callAI(dreamHistory);
+  dreamHistory.push({role:'assistant',content:JSON.stringify(res)});
+  renderDreamChat(false,res);
+}
+function renderDreamChat(loading,res=null){
+  const el=document.getElementById('dream-chat-area');if(!el)return;
+  const l=L();let h='<div class="dream-chat">';
+  dreamHistory.forEach(m=>{
+    if(m.role==='user'){h+=`<div class="dream-bubble user">${esc(m.content)}</div>`;}
+    else{
+      try{
+        const r=JSON.parse(m.content);
+        h+=`<div class="dream-bubble ai">${esc(r.message||'')}</div>`;
+        if(r.project){
+          _pendingDreamProject=r.project;
+          h+=`<div style="background:linear-gradient(135deg,#f0e6ff,#e6f0ff);border-radius:12px;padding:12px;margin-top:6px;border:1.5px solid #c4b5fd"><div style="font-weight:700;font-size:13px;color:#7c3aed;margin-bottom:6px">📋 ${esc(r.project.name)}</div>${(r.project.tasks||[]).map(t=>`<div style="font-size:12px;color:#4c1d95;padding:1px 0">• ${esc(t)}</div>`).join('')}${(r.project.shopping||[]).length?`<div style="font-size:10px;color:#6d28d9;margin-top:4px">🛒 ${r.project.shopping.join('・')}</div>`:''}<button class="dream-register-btn" onclick="execRegisterDream()">${l.dreamRegisterBtn}</button></div>`;
+        }
+      }catch{h+=`<div class="dream-bubble ai">${esc(m.content)}</div>`;}
+    }
+  });
+  if(loading)h+=`<div class="dream-typing"><div class="dream-dot"></div><div class="dream-dot"></div><div class="dream-dot"></div></div>`;
+  h+='</div>';
+  if(res?._retry&&!loading){
+    window._dreamRetryMsg=res._retry;
+    h+=`<div style="margin-top:8px"><button class="btn bp bs" onclick="window._dreamRetryMsg&&sendDreamMessage(window._dreamRetryMsg)">🔄 再試行</button></div>`;
+  }
+  if(res?.choices?.length&&!loading){
+    h+=`<div class="dream-choice-grid">${res.choices.map(c=>`<button class="dream-choice" onclick="sendDreamMessage('${esc(c)}')">${esc(c)}</button>`).join('')}</div>`;
+  }
+  if(!loading)h+=`<div class="row mt8"><input class="inp" id="dream-inp" placeholder="その他（自由に記載ください）" style="flex:1"/><button class="mic" id="mic-dream" onclick="toggleDreamMic()">🎤</button><button class="btn bpu bs" onclick="sendDreamFromInput()">→</button></div>`;
+  el.innerHTML=h;el.scrollTop=el.scrollHeight;
+}
+function execRegisterDream(){if(!_pendingDreamProject){alert('登録データがありません');return;}registerDreamProject(_pendingDreamProject);}
+function registerDreamProject(p){
+  if(!p)return;
+  const par={id:uid(),title:p.name||'新プロジェクト',parentId:null,category:'sketch',done:false,children:[],shopping:[],createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'};
+  D.tasks.push(par);
+  (p.tasks||[]).forEach(title=>{const c={id:uid(),title,parentId:par.id,category:'sketch',done:false,children:[],shopping:[],createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'};D.tasks.push(c);par.children.push(c.id);});
+  if(p.shopping?.length){p.shopping.forEach(s=>par.shopping.push({id:uid(),item:s,done:false}));D.pastIngredients=[...new Set([...p.shopping,...D.pastIngredients])].slice(0,30);}
+  save();_pendingDreamProject=null;hideModal();alert(L().dreamRegistered);switchSec('home');render();
+}
+function sendDreamFromInput(){const inp=document.getElementById('dream-inp');if(!inp?.value.trim())return;sendDreamMessage(inp.value);inp.value='';}
+let _dreamRec=null;
+function toggleDreamMic(){
+  const btn=document.getElementById('mic-dream');
+  if(_dreamRec){_dreamRec.stop();_dreamRec=null;if(btn)btn.classList.remove('on');return;}
+  try{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){alert('音声認識非対応');return;}
+    const rec=new SR();
+    rec.lang=L().speechLang||'ja-JP';rec.interimResults=false;
+    rec.onresult=e=>{const t=e.results[0][0].transcript;const inp=document.getElementById('dream-inp');if(inp)inp.value=t;};
+    rec.onend=()=>{_dreamRec=null;if(btn)btn.classList.remove('on');};
+    rec.start();_dreamRec=rec;if(btn)btn.classList.add('on');
+  }catch(e){alert('マイクエラー: '+e.message);}
+}
+function openDreamSketch(){
+  const l=L();dreamHistory=[];
+  showModal(`
+    <div style="background:linear-gradient(135deg,#fdf4ff,#fce7f3 40%,#ede9fe 70%,#e0f2fe);border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;border:2px solid #c4b5fd">
+      <div style="font-size:32px;margin-bottom:6px">✨</div>
+      <div style="font-size:16px;font-weight:700;color:#7c3aed">${l.dreamSketchTitle}</div>
+      <div style="font-size:11px;color:#a855f7;margin-top:3px">${l.sketchTagline}</div>
+      <div style="font-size:12px;color:#6d28d9;margin-top:6px;padding:8px;background:#f5f3ff;border-radius:8px">${l.dreamSketchIntro}</div>
+      <div style="font-size:10px;color:#10b981;margin-top:6px;font-weight:700">🤖 Llama（Cloudflare Workers経由）</div>
+    </div>
+    <div id="dream-chat-area" style="max-height:52vh;overflow-y:auto"></div>`,
+  ()=>{
+    sendDreamMessage('start');
+  });
+}
+
+
+// ============================================================
+// HOME
+// ============================================================
+function renderHome(){
+  const cats=D.categories||L().defCats,tm=tmap(),l=L();
+  const el=document.getElementById('home-cnt');if(!el)return;
+  const sortedCats=[...cats.filter(c=>c.isSketch),...cats.filter(c=>!c.isSketch)];
+  let h='<div class="home-cat-grid">';
+  sortedCats.forEach(cat=>{
+    const ct=D.tasks.filter(t=>t.category===cat.id),dn=ct.filter(t=>t.done).length,pct=ct.length?dn/ct.length*100:0;
+    if(cat.isSketch){
+      h+=`<div class="home-cat-card dream-sketch-card" onclick="openDreamSketch()" style="padding:22px 18px;">
+        <div class="dream-sketch-badge">${esc(l.sketchBadge||'🤖 AI')}</div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;width:100%;padding-bottom:4px">
+            <div style="font-size:21px;font-weight:700;color:#7c3aed;line-height:1.2;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${esc(cat.label)}</div>
+            <div style="font-size:18px;color:#7c3aed;font-weight:700;text-align:center">${l.tapToStart||'→'}</div>
+            <div style="font-size:15px;color:#a855f7;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${esc(l.sketchTagline||'')}</div>
+        </div>
+      </div>`;
+    }else{
+      h+=`<div class="home-cat-card" style="border-top:4px solid ${cat.color}" onclick="openFloat('${cat.id}')">
+        <div style="font-size:24px;margin-bottom:4px">${cat.icon}</div>
+        <div style="font-size:12px;font-weight:700;color:${cat.color}">${esc(cat.label)}</div>
+        <div style="font-size:10px;color:#64748b;margin-bottom:4px">${dn}/${ct.length}</div>
+        <div class="pb"><div class="pf" style="width:${pct}%;background:${cat.color}"></div></div>
+        <div style="font-size:10px;color:${cat.color};font-weight:700;margin-top:5px">${l.tapToList||'→'}</div>
+      </div>`;
+    }
+  });
+  const ps=D.tasks.reduce((s,t)=>s+(t.shopping||[]).filter(x=>!x.done).length,0);
+  h+=`</div><div class="home-cat-card card" style="border-top:3px solid #EF476F;cursor:pointer;margin-bottom:0" onclick="switchSec('shop')"><span style="font-size:20px">🛒</span> <span style="font-size:13px;font-weight:700;color:#EF476F">${l.pending}: ${ps}</span></div>`;
+  el.innerHTML=h;
+}
+function renderHomeDetail(){
+  const tm=tmap(),cm=cmap(),l=L(),sel=selId?tm[selId]:null;
+  const el=document.getElementById('home-cnt');if(!el||!sel)return;
+  const cat=cm[sel.category]||{icon:'🎯',color:'#06B6D4',label:''},cn=sel.children||[],dn=cn.filter(c=>tm[c]?.done).length;
+  const repLbl={none:l.repeatNone,daily:l.daily,weekly:l.weekly,monthly:l.monthly,yearly:l.yearly};
+  let h=`<div class="card" style="border-left:5px solid ${cat.color};margin-bottom:11px">
+    <div style="display:flex;align-items:center;gap:9px;margin-bottom:7px">
+      <span style="font-size:22px">${cat.icon}</span>
+      <div style="flex:1"><div style="font-size:14px;font-weight:700;color:#0e7490">${esc(sel.title)}</div><span class="tbg" style="background:${catBg(cat.color)};color:${cat.color}">${esc(cat.label)}</span></div>
+      <button class="btn bg bs" style="padding:4px 8px;align-self:flex-start" onclick="selId=null;render()">${l.close}</button>
+    </div>
+    ${cn.length?`<div class="pb"><div class="pf" style="width:${dn/cn.length*100}%"></div></div><div style="font-size:9px;color:#64748b;margin-top:2px">${dn}/${cn.length}</div>`:''}
+    ${sel.dueDate||sel.repeat!=='none'?`<div style="font-size:10px;color:#0e7490;margin-top:4px;display:flex;gap:7px">${sel.dueDate?`<span>📅${sel.dueDate}</span>`:''}${sel.repeat!=='none'?`<span>🔁${repLbl[sel.repeat]}</span>`:''}</div>`:''}
+    <div class="row mt8" style="flex-wrap:wrap;gap:5px">
+      ${sel.done?`<button class="btn bs" style="flex:1;background:#d1fae5;color:#065f46" onclick="toggleDoneRepeat(${sel.id});render()">✅ ${l.undone}</button>`:`<button class="btn bp bs" style="flex:1" onclick="toggleDoneRepeat(${sel.id})">${l.done}</button>`}
+      <button class="btn bd bs" onclick="if(confirm('削除しますか？'))deleteTask(${sel.id})">${l.del}</button>
+    </div>
+  </div>
+  <div class="card"><div class="ct">🌿 ${l.subAdd}</div>`;
+  cn.forEach(cid=>{const c=tm[cid];if(!c)return;
+    h+=`<div class="ti${c.done?' di':''}" onclick="selId=${c.id};render()"><div class="chk${c.done?' dn':''}" onclick="event.stopPropagation();toggleDoneRepeat(${c.id})">${c.done?'✓':''}</div><div style="flex:1;min-width:0"><span class="tl${c.done?' dn':''}">${esc(c.title)}</span>${c.dueDate||c.repeat!=='none'?`<div style="font-size:9px;color:#64748b">${c.dueDate?'📅'+c.dueDate:''}${c.repeat!=='none'?' 🔁'+repLbl[c.repeat]:''}</div>`:''}</div></div>`;
+  });
+  if(!cn.length)h+=`<div style="color:#9ca3af;font-size:12px">${l.noTask}</div>`;
+  h+=`<button class="btn bp bs bw mt8" onclick="openAddChild(${sel.id})">＋ ${l.subAdd}</button></div>`;
+  // 買い物
+  h+=`<div class="card"><div class="ct">🛒</div>`;
+  (sel.shopping||[]).forEach(s=>{
+    h+=`<div class="si"><div class="chk${s.done?' dn':''}" style="width:20px;height:20px;font-size:10px" onclick="toggleShop(${sel.id},${s.id})">${s.done?'✓':''}</div><span style="flex:1;font-size:12px" class="${s.done?'sd':''}">${esc(s.item)}</span><a href="https://www.google.com/search?q=${encodeURIComponent(s.item)}" target="_blank" class="sl">🔍</a><button class="bic" onclick="delShop(${sel.id},${s.id})">${l.del}</button></div>`;
+  });
+  h+=`<div class="row mt8"><input class="inp" id="shop-inp" placeholder="その他（自由に記載ください）" style="flex:1"/><button class="mic" style="width:38px;height:38px;font-size:16px" id="mic-shop" onclick="startVoice('shop')">🎤</button><button class="btn bp bs" onclick="doAddShop(${sel.id})">＋</button></div><div class="vh" id="vh-shop"></div><div style="font-size:11px;color:#64748b;margin-top:6px">${L().suggestLabel}</div><div class="sugg-l">${D.pastIngredients.slice(0,14).map(x=>`<button class="sg" onclick="addShop(${sel.id},'${esc(x)}');render()">${esc(x)}</button>`).join('')}</div></div>`;
+  el.innerHTML=h;
+}
+function doAddShop(taskId){const inp=document.getElementById('shop-inp');if(!inp?.value.trim())return;addShop(taskId,inp.value);inp.value='';render();}
+
+// ============================================================
+// TASKS
+// ============================================================
+function renderTasks(){
+  const cats=D.categories||L().defCats,l=L();
+  const nr=document.getElementById('cat-new-row');
+  if(nr)nr.innerHTML=cats.map(c=>`<button class="pill" style="background:${catBg(c.color)};color:${c.color};border-color:${newCat===c.id?c.color:'transparent'}" onclick="newCat='${c.id}';renderTasks()">${c.icon} ${esc(c.label)}</button>`).join('');
+  renderFilterRow();renderTaskList();
+}
+function renderFilterRow(){
+  const cats=D.categories||L().defCats,fr=document.getElementById('filter-row');if(!fr)return;
+  fr.innerHTML=`<button class="pill" style="background:#f0f9ff;color:#06B6D4;border-color:${filterCat==='all'?'#06B6D4':'transparent'}" onclick="filterCat='all';renderTaskList()">🌈</button>`
+    +cats.map(c=>`<button class="pill" style="background:${catBg(c.color)};color:${c.color};border-color:${filterCat===c.id?c.color:'transparent'}" onclick="filterCat='${c.id}';newCat='${c.id}';renderTaskList()">${c.icon} ${esc(c.label)}</button>`).join('');
+}
+function renderTaskList(){
+  const tm=tmap(),cm=cmap(),l=L();
+  const filtered=filterCat==='all'?D.tasks:D.tasks.filter(t=>t.category===filterCat);
+  const roots=filtered.filter(t=>!t.parentId||!tm[t.parentId]);
+  const el=document.getElementById('task-list');if(!el)return;
+  if(!roots.length){el.innerHTML=`<div class="emp"><div class="emp-e">🌱</div><div>${l.noTask}</div></div>`;return;}
+  function iH(t,d){
+    const cat=cm[t.category]||{icon:'🎯',color:'#06B6D4'};
+    const ch=(t.children||[]).map(id=>tm[id]).filter(Boolean);
+    const sc=(t.shopping||[]).filter(s=>!s.done).length,isExp=expandedTasks.has(t.id);
+    return `<div>
+      <div class="ti${t.done?' di':''}" style="margin-left:${d*15}px" onclick="openTaskFloat(${t.id})">
+        <div class="chk${t.done?' dn':''}" onclick="event.stopPropagation();toggleDoneRepeat(${t.id})">${t.done?'✓':''}</div>
+        <div style="flex:1;min-width:0"><div class="tl${t.done?' dn':''}">${esc(t.title)}</div>${t.dueDate?`<div style="font-size:9px;color:#64748b">📅${t.dueDate}</div>`:''}${ch.length?`<div class="pb"><div class="pf" style="width:${ch.filter(c=>c.done).length/ch.length*100}%"></div></div>`:''}${sc?`<div style="font-size:9px;color:#06B6D4">🛒${sc}</div>`:''}</div>
+        <span class="tbg" style="background:${catBg(cat.color)};color:${cat.color}">${cat.icon}</span>
+        ${ch.length?`<button class="bic" style="font-size:11px;border:none;background:none" onclick="event.stopPropagation();toggleExpand(${t.id})">${isExp?'▲':'▼'}</button>`:'<span style="color:#94a3b8;font-size:11px">›</span>'}
+      </div>
+      ${ch.length&&isExp?`<div class="ch">${ch.map(c=>iH(c,0)).join('')}</div>`:''}</div>`;
+  }
+  el.innerHTML=roots.map(t=>iH(t,0)).join('');
+}
+
+// ============================================================
+// MAP (プロジェクト一覧 + 達成フォルダ + 並び替え)
+// ============================================================
+let mmRootId=null,mmLayout='tree',mmIsPortrait=true,_mmDragSrc=null;
+window.addEventListener('resize',()=>{const p=window.innerHeight>window.innerWidth;if(p!==mmIsPortrait){mmIsPortrait=p;if(mmRootId!==null)renderMmCanvas();}});
+
+// 並び順を管理（D.mapOrderに保存）
+function getOrderedRoots(){
+  const allRoots=D.tasks.filter(t=>!t.parentId).map(t=>t.id);
+  const ordered=D.mapOrder.filter(id=>allRoots.includes(id));
+  const unordered=allRoots.filter(id=>!ordered.includes(id));
+  return[...ordered,...unordered];
+}
+
+function renderMindmap(){
+  const tm=tmap(),cm=cmap(),l=L();
+  const el=document.getElementById('mm-list-area');if(!el)return;
+  const ordered=getOrderedRoots();
+  const active=ordered.filter(id=>!D.archived.some(a=>a.id===id));
+  const archived=D.archived;
+  let h='';
+
+  // アクティブプロジェクト
+  active.forEach((id,idx)=>{
+    const t=tm[id];if(!t)return;
+    const cat=cm[t.category]||{icon:'🎯',color:'#06B6D4',label:''};
+    const ch=(t.children||[]).length,dn=(t.children||[]).filter(c=>tm[c]?.done).length;
+    const sc=(t.shopping||[]).filter(s=>!s.done).length;
+    const allDone=ch>0&&dn===ch;
+    h+=`<div class="mm-proj-card${allDone?' mm-proj-done':''}" style="border-left:4px solid ${cat.color};cursor:pointer"
+      draggable="true"
+      ondragstart="mmDragStart(event,${id})"
+      ondragover="mmDragOver(event)"
+      ondragleave="mmDragLeave(event)"
+      ondrop="mmDrop(event,${id})"
+      ontouchstart="mmTouchStart(event,${id})"
+      onclick="openMmCanvas(${id})"
+      oncontextmenu="event.preventDefault();mmLongPress(${id})">
+      <span class="mm-drag-handle" onclick="event.stopPropagation()" ondragstart="event.stopPropagation()">☰</span>
+      <div class="mm-proj-icon" style="color:${cat.color}">${cat.icon}</div>
+      <div class="mm-proj-info">
+        <div class="mm-proj-title">${esc(t.title)}</div>
+        <div class="mm-proj-sub">${cat.label}${ch?' · '+ch+'件':''}${dn?'（'+dn+'完了）':''}${sc?' · 🛒'+sc:''}${allDone?' ✅':''}${t.done?' · 完了':''}</div>
+      </div>
+      <div style="font-size:20px;color:#94a3b8;flex-shrink:0">›</div>
+    </div>`;
+  });
+
+  if(!active.length)h+=`<div class="card"><div class="emp"><div class="emp-e">🌐</div><div>${l.noTask}</div></div></div>`;
+
+  // 達成フォルダ
+  const archiveOpen=sessionStorage.getItem('mm-archive-open')==='1';
+  h+=`<div class="mm-archive-section">
+    <div class="mm-archive-title" onclick="toggleArchiveSection()">
+      <span>🏆 ${l.archiveTitle||'達成フォルダ'}</span>
+      <span style="font-size:12px;color:#065f46;margin-left:auto">${archived.length}件 ${archiveOpen?'▲':'▼'}</span>
+    </div>
+    <div class="mm-archive-list" id="mm-archive-list" style="display:${archiveOpen?'block':'none'}">
+      ${archived.length?archived.map(a=>`
+        <div class="mm-archive-item">
+          <span style="font-size:20px">🏆</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:#065f46;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(a.title)}</div>
+            <div style="font-size:10px;color:#6b7280">達成: ${a.archivedAt?.slice(0,10)||''}  ${a.tasks?.length||0}タスク</div>
+          </div>
+          <button class="btn bg bs" onclick="archiveRestore(${a.id})" style="font-size:10px;padding:3px 7px">${l.archiveRestore||'戻す'}</button>
+          <button class="btn bd bs" onclick="archiveDelete(${a.id})" style="font-size:10px;padding:3px 7px">${l.archiveDelete||'削除'}</button>
+        </div>`).join(''):
+      `<div style="font-size:12px;color:#6b7280;padding:8px 0">${l.archiveEmpty||'達成プロジェクトはまだありません'}</div>`}
+    </div>
+  </div>`;
+
+  el.innerHTML=h;
+}
+
+function toggleArchiveSection(){
+  const cur=sessionStorage.getItem('mm-archive-open')==='1';
+  sessionStorage.setItem('mm-archive-open',cur?'0':'1');
+  renderMindmap();
+}
+
+// 達成フォルダに移動
+function archiveMove(rootId){
+  const tm=tmap();const t=tm[rootId];if(!t)return;
+  const l=L();
+  if(!confirm(`「${t.title}」を達成フォルダに移動しますか？`))return;
+  // タスクデータをスナップショット保存
+  const collect=id=>{const t=tm[id];return t?[{...t},...(t.children||[]).flatMap(collect)]:[];};
+  const snap=collect(rootId);
+  D.archived.push({id:rootId,title:t.title,archivedAt:new Date().toISOString(),tasks:snap});
+  // アクティブから除去（タスクデータは保持）
+  D.mapOrder=D.mapOrder.filter(id=>id!==rootId);
+  save();
+  sessionStorage.setItem('mm-archive-open','1');
+  renderMindmap();
+}
+
+// 達成フォルダから戻す
+function archiveRestore(rootId){
+  const a=D.archived.find(x=>x.id===rootId);if(!a)return;
+  D.archived=D.archived.filter(x=>x.id!==rootId);
+  // タスクが削除されていなければそのまま
+  save();renderMindmap();
+}
+
+// 達成フォルダから完全削除
+function archiveDelete(rootId){
+  const l=L();const a=D.archived.find(x=>x.id===rootId);if(!a)return;
+  if(!confirm(`「${a.title}」を完全削除しますか？元に戻せません。`))return;
+  D.archived=D.archived.filter(x=>x.id!==rootId);
+  // タスクも削除
+  const ids=new Set((a.tasks||[]).map(t=>t.id));
+  D.tasks=D.tasks.filter(t=>!ids.has(t.id)).map(t=>({...t,children:(t.children||[]).filter(c=>!ids.has(c))}));
+  save();renderMindmap();
+}
+
+// 長押し → 達成フォルダ移動の選択肢
+let _mmLongPressTimer=null;
+function mmTouchStart(e,id){
+  _mmLongPressTimer=setTimeout(()=>mmLongPress(id),600);
+}
+document.addEventListener('touchend',()=>{if(_mmLongPressTimer){clearTimeout(_mmLongPressTimer);_mmLongPressTimer=null;}});
+function mmLongPress(id){
+  const tm=tmap(),t=tm[id];if(!t)return;
+  const l=L();
+  showModal(`<div class="mot">📋 ${esc(t.title)}</div>
+    <button class="btn bp bw" style="margin-bottom:8px" onclick="hideModal();archiveMove(${id})">🏆 ${l.archiveMove||'達成フォルダへ移動'}</button>
+    <button class="btn bg bw" onclick="hideModal()">${l.close}</button>`);
+}
+
+// ドラッグ＆ドロップで並び替え
+function mmDragStart(e,id){_mmDragSrc=id;e.dataTransfer.effectAllowed='move';}
+function mmDragOver(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function mmDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function mmDrop(e,targetId){
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(_mmDragSrc===targetId){_mmDragSrc=null;return;}
+  const ordered=getOrderedRoots().filter(id=>!D.archived.some(a=>a.id===id));
+  const si=ordered.indexOf(_mmDragSrc),ti=ordered.indexOf(targetId);
+  if(si<0||ti<0){_mmDragSrc=null;return;}
+  ordered.splice(si,1);ordered.splice(ti,0,_mmDragSrc);
+  D.mapOrder=ordered;save();_mmDragSrc=null;renderMindmap();
+}
+
+// ============================================================
+// マインドマップ キャンバス
+// ============================================================
+function openMmCanvas(rootId){
+  mmRootId=rootId;mmIsPortrait=window.innerHeight>window.innerWidth;
+  const sel=document.getElementById('mm-layout-sel');if(sel)sel.value=mmLayout;
+  const tm=tmap(),t=tm[rootId];
+  document.getElementById('mm-float-title').textContent=t?t.title:'';
+  document.getElementById('mm-float-panel').classList.add('open');
+  document.getElementById('mm-float-overlay').style.display='block';
+  renderMmCanvas();
+}
+function closeMmFloat(){
+  document.getElementById('mm-float-panel').classList.remove('open');
+  document.getElementById('mm-float-overlay').style.display='none';
+  mmRootId=null;
+}
+function changeMmLayout(val){mmLayout=val;if(mmRootId!==null)renderMmCanvas();}
+
+function renderMmCanvas(){
+  const svg=document.getElementById('mm-svg');
+  if(!svg||mmRootId===null)return;
+  const tm=tmap(),cm=cmap(),root=tm[mmRootId];
+  if(!root){svg.innerHTML='';return;}
+  const portrait=mmIsPortrait;
+  // 修正3: フィット表示のため、コンテナサイズに合わせる
+  const container=document.getElementById('mm-float-body');
+  const rect=container?container.getBoundingClientRect():null;
+  const cw=rect&&rect.width>0?rect.width-16:window.innerWidth-16;
+  const ch=rect&&rect.height>0?rect.height-16:window.innerHeight-120;
+  const NW=Math.min(180,Math.max(100,Math.floor(cw/3))),NH=38,PAD=14;
+  if(mmLayout==='radial')drawRadial(svg,root,tm,cm,NW,NH,PAD,cw,ch);
+  else if(mmLayout==='org')drawOrg(svg,root,tm,cm,NW,NH,PAD,portrait,cw,ch);
+  else if(mmLayout==='logic')drawLogic(svg,root,tm,cm,NW,NH,PAD,cw,ch);
+  else drawTree(svg,root,tm,cm,NW,NH,PAD,portrait,cw,ch);
+}
+
+// ── ノード描画（長押しチェック対応） ───────────────────────
+function calcNodeH(t,w,h){
+  const maxW=w-28;const fontSize=10;
+  const charsPerLine=Math.max(3,Math.floor(maxW/(fontSize*1.1)));
+  const words=t.title.split('');
+  let lines=[],cur='';
+  for(const c of words){if((cur+c).length>charsPerLine){lines.push(cur);cur=c;}else cur+=c;}
+  if(cur)lines.push(cur);
+  const lineH=fontSize+4;
+  return Math.max(h,lines.length*lineH+12);
+}
+function calcNodeH(t,w,h){
+  const maxW=w-28;const fontSize=10;
+  const charsPerLine=Math.max(3,Math.floor(maxW/(fontSize*1.1)));
+  const words=t.title.split('');
+  let lines=[],cur='';
+  for(const c of words){if((cur+c).length>charsPerLine){lines.push(cur);cur=c;}else cur+=c;}
+  if(cur)lines.push(cur);
+  const lineH=fontSize+4;
+  return Math.max(h,lines.length*lineH+12);
+}
+function drawNode(s,t,x,y,w,h,cat,isSel,isRoot=false){
+  const done=t.done,sk=cat.isSketch;
+  const fill=done?'#d1fae5':isSel?'#e0f7fa':sk?'#f5f0ff':'white';
+  const stroke=isSel?'#06B6D4':cat.color;
+  // テキストを折り返してノード高さを動的に計算
+  const maxW=w-28;const fontSize=10;
+  // 日本語全角文字は半角の約2倍幅
+  const charsPerLine=Math.max(3,Math.floor(maxW/(fontSize*1.1)));
+  const words=t.title.split('');
+  let lines=[],cur='';
+  for(const c of words){if((cur+c).length>charsPerLine){lines.push(cur);cur=c;}else cur+=c;}
+  if(cur)lines.push(cur);
+  const lineH=fontSize+4;const nodeH=Math.max(h,lines.length*lineH+12);
+  const nodeEvents=`onmousedown="mmNodeDown(event,${t.id})" onmouseup="mmNodeUp(event,${t.id})" ontouchstart="mmNodeTouchStart(event,${t.id})" ontouchend="mmNodeTouchEnd(event,${t.id})" onclick="mmNodeClick(event,${t.id})" style="cursor:pointer"`;
+  s+=`<g ${nodeEvents}>`;
+  s+=`<rect x="${x}" y="${y}" width="${w}" height="${nodeH}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="${isSel?2.5:1.5}" filter="url(#ms)"/>`;
+  if(isRoot)s+=`<rect x="${x-3}" y="${y-3}" width="${w+6}" height="${nodeH+6}" rx="10" fill="none" stroke="${stroke}" stroke-width="2" opacity="0.6"/>`;
+  if(done)s+=`<line x1="${x+4}" y1="${y+nodeH/2}" x2="${x+w-4}" y2="${y+nodeH/2}" stroke="#9ca3af" stroke-width="1.5"/>`;
+  s+=`<text x="${x+8}" y="${y+nodeH/2+4}" font-size="10" fill="${done?'#9ca3af':cat.color}">${esc(cat.icon)}</text>`;
+  lines.forEach((ln,i)=>{
+    const ty=y+(nodeH/2)-(lines.length-1)*lineH/2+i*lineH;
+    s+=`<text x="${x+22}" y="${ty+4}" font-size="${fontSize}" fill="${done?'#9ca3af':sk?'#4c1d95':'#1a1a2e'}" font-family="sans-serif">${esc(ln)}</text>`;
+  });
+  s+=`</g>`;
+  return s;
+}
+
+// 長押し検知（ノード）
+let _nodeTimer=null,_nodeLongPressed=false;
+function mmNodeDown(e,id){_nodeLongPressed=false;_nodeTimer=setTimeout(()=>{_nodeLongPressed=true;toggleDoneRepeat(id);if(mmRootId!==null)renderMmCanvas();},500);}
+function mmNodeUp(e,id){if(_nodeTimer){clearTimeout(_nodeTimer);_nodeTimer=null;}}
+function mmNodeTouchStart(e,id){_nodeLongPressed=false;if(e.touches&&e.touches.length>1){return;}// ピンチ操作中は長押し無効
+_nodeTimer=setTimeout(()=>{if(e.touches&&e.touches.length>1)return;_nodeLongPressed=true;e.preventDefault();toggleDoneRepeat(id);if(mmRootId!==null)renderMmCanvas();},500);}
+function mmNodeTouchEnd(e,id){if(_nodeTimer){clearTimeout(_nodeTimer);_nodeTimer=null;}}
+function mmNodeClick(e,id){if(_nodeLongPressed){_nodeLongPressed=false;return;}selId=id;closeMmFloat();switchSec('home');}
+
+function edge(x1,y1,x2,y2,color='#bae6fd',dir='h'){
+  const cx=(x1+x2)/2,cy=(y1+y2)/2;
+  return dir==='h'?`<path d="M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="4 3"/>`:
+    `<path d="M${x1},${y1} C${x1},${cy} ${x2},${cy} ${x2},${y2}" fill="none" stroke="${color}" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+}
+function initSvg(svg,W,H){
+  svg.setAttribute('width','100%');svg.setAttribute('height','100%');
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+  svg.style.width='100%';
+  svg.style.height='100%';
+  svg.style.maxWidth='100%';
+  svg.style.maxHeight='100%';
+  return `<defs><filter id="ms"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#06B6D4" flood-opacity="0.12"/></filter></defs>`;
+}
+
+// ── ツリー型 ─────────────────────────────────────────────────
+function drawTree(svg,root,tm,cm,NW,NH,PAD,portrait,cw,ch){
+  const cat=cm[root.category]||{icon:'🎯',color:'#06B6D4'};
+  const GAP=portrait?NH+PAD*2:NW+PAD*2,SPC=portrait?PAD:PAD;
+  let nodes=[],edges_arr=[];
+  const measure=id=>{
+    const t=tm[id];if(!t)return{span:portrait?NW:NH,nh:NH,subs:[]};
+    const subs=(t.children||[]).map(c=>({id:c,...measure(c)}));
+    const nh=calcNodeH(t,NW,NH);
+    if(!subs.length)return{span:portrait?NW:nh,nh,subs:[]};
+    const total=subs.reduce((a,c)=>a+c.span,0)+Math.max(0,subs.length-1)*SPC;
+    return{span:Math.max(portrait?NW:nh,total),nh,subs};
+  };
+  const layout=(id,x,y,m,depth)=>{
+    const t=tm[id];if(!t)return;
+    const nh=m.nh||NH;
+    const nx=portrait?x+m.span/2-NW/2:x,ny=portrait?y:y+m.span/2-nh/2;
+    nodes.push({t,x:nx,y:ny,nh});
+    let off=portrait?x:y;
+    for(const s of m.subs){
+      const cx=portrait?off:nx+NW+GAP,cy=portrait?ny+nh+GAP:off;
+      if(portrait)edges_arr.push({x1:nx+NW/2,y1:ny+nh,x2:cx+s.span/2,y2:cy,dir:'v'});
+      else edges_arr.push({x1:nx+NW,y1:ny+nh/2,x2:cx,y2:cy+s.span/2,dir:'h'});
+      layout(s.id,cx,cy,s,depth+1);
+      off+=s.span+SPC;
+    }
+  };
+  const m=measure(root.id);layout(root.id,PAD,PAD,m,0);
+  const W=portrait?Math.max(cw,nodes.reduce((a,n)=>Math.max(a,n.x+NW+PAD),0)):Math.max(cw,nodes.reduce((a,n)=>Math.max(a,n.x+NW+GAP+PAD),0));
+  const H=portrait?Math.max(ch,nodes.reduce((a,n)=>Math.max(a,n.y+NH+GAP+PAD),0)):Math.max(ch,nodes.reduce((a,n)=>Math.max(a,n.y+NH+PAD),0));
+  let s=initSvg(svg,W,H);
+  edges_arr.forEach(e=>s+=edge(e.x1,e.y1,e.x2,e.y2,cat.color,e.dir));
+  nodes.forEach(n=>{s=drawNode(s,n.t,n.x,n.y,NW,n.nh,cm[n.t.category]||cat,n.t.id===selId,!n.t.parentId);});
+  svg.innerHTML=s;
+}
+
+// ── 組織図型 ─────────────────────────────────────────────────
+function drawOrg(svg,root,tm,cm,NW,NH,PAD,portrait,cw,ch){
+  const cat=cm[root.category]||{icon:'🎯',color:'#06B6D4'};
+  let nodes=[],edges_arr=[];
+  const GAP=portrait?NH+PAD*2:NW+PAD*2;
+  const measure=id=>{
+    const t=tm[id];if(!t)return{cols:1};
+    const subs=(t.children||[]).map(c=>({id:c,...measure(c)}));
+    return{cols:subs.length?subs.reduce((s,c)=>s+c.cols,0):1,subs};
+  };
+  const layout=(id,lv,col)=>{
+    const t=tm[id];if(!t)return;
+    const x=portrait?col*(NW+PAD)+PAD:lv*(NW+GAP)+PAD,y=portrait?lv*(NH+GAP)+PAD:col*(NH+PAD)+PAD;
+    nodes.push({t,x,y,nh:NH});
+    const m=measure(id);let c=col;
+    (t.children||[]).forEach(cid=>{
+      const mc=measure(cid);
+      const nx=portrait?c*(NW+PAD)+PAD:x+NW+GAP,ny=portrait?y+NH+GAP:c*(NH+PAD)+PAD;
+      if(portrait)edges_arr.push({x1:x+NW/2,y1:y+NH,x2:nx+NW/2,y2:ny,dir:'v'});
+      else edges_arr.push({x1:x+NW,y1:y+NH/2,x2:nx,y2:ny+NH/2,dir:'h'});
+      layout(cid,lv+1,c);c+=mc.cols;
+    });
+  };
+  layout(root.id,0,0);
+  const W=Math.max(cw,nodes.reduce((a,n)=>Math.max(a,n.x+NW+PAD),0));
+  const H=Math.max(ch,nodes.reduce((a,n)=>Math.max(a,n.y+NH+PAD),0));
+  let s=initSvg(svg,W,H);
+  edges_arr.forEach(e=>s+=edge(e.x1,e.y1,e.x2,e.y2,'#94a3b8',e.dir));
+  nodes.forEach(n=>{s=drawNode(s,n.t,n.x,n.y,NW,n.nh,cm[n.t.category]||cat,n.t.id===selId,!n.t.parentId);});
+  svg.innerHTML=s;
+}
+
+// ── ロジックツリー ───────────────────────────────────────────
+function drawLogic(svg,root,tm,cm,NW,NH,PAD,cw,ch){
+  const cat=cm[root.category]||{icon:'🎯',color:'#06B6D4'};
+  let nodes=[],edges_arr=[],sy=PAD;
+  const INDENT=NW*0.5,VG=PAD/2+6;// +6 for isRoot double border
+  const layout=(id,depth)=>{
+    const t=tm[id];if(!t)return;
+    const x=depth*INDENT+PAD,y=sy;
+    nodes.push({t,x,y,nh:NH});
+    if(depth>0)edges_arr.push({x1:x,y1:y+NH/2,x2:x-INDENT+NW,y2:y+NH/2,dir:'h'});
+    sy+=NH+VG;
+    (t.children||[]).forEach(cid=>layout(cid,depth+1));
+  };
+  layout(root.id,0);
+  const W=Math.max(cw,nodes.reduce((a,n)=>Math.max(a,n.x+NW+PAD),0));
+  const H=Math.max(ch,sy+PAD);
+  let s=initSvg(svg,W,H);
+  edges_arr.forEach(e=>s+=`<line x1="${e.x1}" y1="${e.y1}" x2="${e.x2}" y2="${e.y2}" stroke="#bae6fd" stroke-width="1.5"/>`);
+  nodes.forEach(n=>{s=drawNode(s,n.t,n.x,n.y,NW,n.nh,cm[n.t.category]||cat,n.t.id===selId,!n.t.parentId);});
+  svg.innerHTML=s;
+}
+
+// ── 放射状マップ ──────────────────────────────────────────────
+function drawRadial(svg,root,tm,cm,NW,NH,PAD,cw,ch){
+  const cat=cm[root.category]||{icon:'🎯',color:'#06B6D4'};
+  const cx=cw/2,cy=ch/2;
+  const children=(root.children||[]).map(id=>tm[id]).filter(Boolean);
+  const N=children.length||1;
+  // ノード高さを考慮して半径を動的計算
+  const maxChildH=children.length?Math.max(...children.map(t=>calcNodeH(t,NW,NH))):NH;
+  const nodeSize=Math.sqrt(NW*NW+maxChildH*maxChildH);
+  const baseR=Math.min(cx,cy);
+  const R1=baseR*0.55*1.5;
+  const R2=R1+baseR*0.4*1.5;
+  // 放射状：全ノードが収まるSVGサイズを計算（中心を真ん中に）
+  const svgR=R2+NW+PAD*2;
+  const svgW=svgR*2;
+  const svgH=svgR*2;
+  const newCx=svgW/2,newCy=svgH/2;
+  let s=initSvg(svg,svgW,svgH);
+  const nodeList=[];
+  const rootH=calcNodeH(root,NW,NH);
+  nodeList.push({t:root,x:newCx-NW/2,y:newCy-rootH/2,w:NW,h:rootH,cat,isRoot:true});
+  children.forEach((t,i)=>{
+    const a=(i/N)*Math.PI*2-Math.PI/2;
+    const nh=calcNodeH(t,NW,NH);
+    const nx=newCx+R1*Math.cos(a)-NW/2,ny=newCy+R1*Math.sin(a)-nh/2;
+    const c2=cm[t.category]||{icon:'🎯',color:'#06B6D4'};
+    s+=edge(newCx,newCy,nx+NW/2,ny+nh/2,c2.color,'h');
+    nodeList.push({t,x:nx,y:ny,w:NW,h:nh,cat:c2,isRoot:false});
+    const gcs=(t.children||[]).map(id=>tm[id]).filter(Boolean);
+    const M=gcs.length;
+    gcs.forEach((gc,j)=>{
+      const spread=Math.PI/3,ba=a-spread/2+(j/Math.max(M-1,1))*spread;
+      const gcH=calcNodeH(gc,NW,NH);
+      const gx=nx+NW/2+(R2-R1)*Math.cos(ba)-NW/2,gy=ny+nh/2+(R2-R1)*Math.sin(ba)-gcH/2;
+      const c3=cm[gc.category]||{icon:'🎯',color:'#06B6D4'};
+      s+=edge(nx+NW/2,ny+nh/2,gx+NW/2,gy+gcH/2,c3.color,'h');
+      nodeList.push({t:gc,x:gx,y:gy,w:NW,h:gcH,cat:c3,isRoot:false});
+    });
+  });
+  nodeList.forEach(n=>{s=drawNode(s,n.t,n.x,n.y,n.w,n.h,n.cat,n.t.id===selId,n.isRoot);});
+  svg.innerHTML=s;
+}
+
+// ============================================================
+// SHOPPING
+// ============================================================
+function renderShopping(){
+  const l=L(),all=D.tasks.flatMap(t=>(t.shopping||[]).map(s=>({...s,taskId:t.id,taskTitle:t.title})));
+  const pend=all.filter(s=>!s.done),done=all.filter(s=>s.done);
+  const el=document.getElementById('shop-cnt');if(!el)return;
+  if(!all.length){el.innerHTML=`<div class="card"><div class="emp"><div class="emp-e">🛍️</div><div>${l.noShop}</div></div></div>`;return;}
+  let h=`<div class="card"><div class="ct">⏳ ${l.pending}（${pend.length}）</div>`;
+  pend.forEach(s=>{h+=`<div class="si"><div class="chk" style="width:20px;height:20px" onclick="toggleShop(${s.taskId},${s.id})"></div><div style="flex:1"><div style="font-size:12px">${esc(s.item)}</div><div style="font-size:9px;color:#06B6D4">📌 ${esc(s.taskTitle)}</div></div><a href="https://www.google.com/search?q=${encodeURIComponent(s.item)}" target="_blank" class="sl">🔍</a></div>`;});
+  h+=`</div><div class="card"><div class="ct">✅ ${l.bought}（${done.length}）</div>`;
+  done.forEach(s=>{h+=`<div class="si" style="opacity:.55"><div class="chk dn" style="width:20px;height:20px;font-size:9px" onclick="toggleShop(${s.taskId},${s.id})">✓</div><div style="flex:1"><div class="sd" style="font-size:12px">${esc(s.item)}</div><div style="font-size:9px;color:#06B6D4">📌 ${esc(s.taskTitle)}</div></div><a href="https://www.google.com/search?q=${encodeURIComponent(s.item)}" target="_blank" class="sl" style="border-color:#e0f2fe;color:#94a3b8">🔍</a></div>`;});
+  h+=`</div>`;el.innerHTML=h;
+}
+
+// ============================================================
+// CALENDAR
+// ============================================================
+function renderCalendar(){
+  const cm=cmap(),l=L(),y=calMonth.getFullYear(),m=calMonth.getMonth();
+  document.getElementById('cal-lbl').textContent=`${y}/${m+1}`;
+  const first=new Date(y,m,1),last=new Date(y,m+1,0),days=[];
+  for(let i=0;i<first.getDay();i++)days.unshift({date:new Date(y,m,-i),ot:true});
+  for(let i=1;i<=last.getDate();i++)days.push({date:new Date(y,m,i),ot:false});
+  const rem=7-(days.length%7);if(rem<7)for(let i=1;i<=rem;i++)days.push({date:new Date(y,m+1,i),ot:true});
+  const td=TODAY();
+  document.getElementById('cal-grid').innerHTML=days.map(({date,ot})=>{
+    const ds=date.toISOString().slice(0,10),isT=ds===td;
+    const dt=D.tasks.filter(t=>t.createdAt?.slice(0,10)===ds||t.doneAt?.slice(0,10)===ds||t.dueDate===ds);
+    return`<div class="cal-c${isT?' td':''}${ot?' ot':''}"><div class="cal-n">${date.getDate()}</div>${dt.slice(0,3).map(t=>{const c=cm[t.category];return`<div class="cal-d" style="background:${t.done?'#06D6A0':(c?.color||'#06B6D4')}" onclick="selId=${t.id};switchSec('home')">${esc(t.title)}</div>`;}).join('')}${dt.length>3?`<div style="font-size:7px;color:#64748b">+${dt.length-3}</div>`:''}</div>`;
+  }).join('');
+}
+
+// ============================================================
+// HELP
+// ============================================================
+function renderHelp(){
+  document.getElementById('help-content').innerHTML=(L().helpQA||[]).map((qa,i)=>`<div class="help-card"><div class="help-q" onclick="this.nextElementSibling.classList.toggle('open');this.lastElementChild.textContent=this.nextElementSibling.classList.contains('open')?'▲':'▼'"><span>Q. ${esc(qa.q)}</span><span>▼</span></div><div class="help-a">A. ${esc(qa.a)}</div></div>`).join('');
+}
+
+// ============================================================
+// サブタスク追加
+// ============================================================
+function openAddChild(parentId){
+  const tm=tmap(),parent=tm[parentId],l=L();
+  const repOpts=[['none',l.repeatNone],['daily',l.daily],['weekly',l.weekly],['monthly',l.monthly],['yearly',l.yearly]];
+  showModal(`<div class="mot">🌿 ${l.subAdd}</div><div class="mos">${esc(parent?.title||'')}</div>
+    <div class="row" style="margin-bottom:4px"><input class="inp" id="child-inp" placeholder="${l.newtask}" style="flex:1"/><button class="mic" style="width:39px;height:39px;font-size:16px" id="mic-child" onclick="startVoice('child')">🎤</button></div>
+    <div class="vh" id="vh-child" style="margin-bottom:7px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:9px">
+      <div><div class="lbl">📅 ${l.dueDate}</div><input class="inp" type="date" id="child-due" style="font-size:11px;padding:7px 8px"/></div>
+      <div><div class="lbl">🔁 ${l.repeat}</div><select class="inp" id="child-repeat" style="font-size:11px;padding:7px 8px">${repOpts.map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select></div>
+    </div>
+    <div class="row" style="gap:6px"><button class="btn bp" style="flex:1" id="child-add-btn">${l.addtask}</button><button class="btn bg" onclick="hideModal()">${l.catCancel}</button></div>`,
+  ()=>{
+    const cinp=document.getElementById('child-inp'),addBtn=document.getElementById('child-add-btn');
+    setTimeout(()=>cinp?.focus(),80);
+    const doAdd=()=>{
+      const title=cinp?.value?.trim();if(!title)return;
+      addTask(title,parentId,parent?.category||'dream',{dueDate:document.getElementById('child-due')?.value||null,repeat:document.getElementById('child-repeat')?.value||'none'});
+      hideModal();if(selId===parentId)render();
+    };
+    addBtn?.addEventListener('click',doAdd);
+    cinp?.addEventListener('keydown',e=>{if(e.key==='Enter')doAdd();});
+  });
+}
+
+// ============================================================
+// カテゴリ管理
+// ============================================================
+function openCatManager(){
+  const l=L();let cats=[...D.categories];
+  let editIdx=null,newLbl='',newIco='🎯',newClr='#8b5cf6';
+  const render_cm=()=>{
+    showModal(`<div class="mot">⚙️ ${l.catmgr}</div>
+      <div id="cm-list">${cats.map((cat,i)=>`<div class="cmi"><div style="width:14px;height:14px;border-radius:50%;background:${cat.color}"></div><span style="font-size:16px">${cat.icon}</span><span style="flex:1;font-weight:700;font-size:12px">${esc(cat.label)}</span>${FIXED.includes(cat.id)?`<span class="fb">${l.catFixed}</span>`:`<button class="bic" onclick="window._cmEdit(${i})">${editIdx===i?'✕':'✏️'}</button><button class="bic" style="color:#ef4444" onclick="window._cmDel(${i})">🗑</button>`}</div>${editIdx===i&&!FIXED.includes(cat.id)?`<div class="eb"><input class="inp" id="cm-lbl-${i}" value="${esc(cat.label)}" placeholder="${l.catNewPh}" style="margin-bottom:6px"/><div class="lbs">${l.catEmojiL}</div><div class="eg">${EMOJIS.map(e=>`<span class="eo${cat.icon===e?' s':''}" onclick="window._cmEmo(${i},'${e}')">${e}</span>`).join('')}</div><div class="lbs">${l.catColorL}</div><div class="cg">${COLORS.map(c=>`<div class="co${cat.color===c?' s':''}" style="background:${c}" onclick="window._cmClr(${i},'${c}')"></div>`).join('')}</div><button class="btn bp bs" style="margin-top:8px" onclick="window._cmSave(${i})">✓</button></div>`:''}`).join('')}</div>
+      <div class="ab"><div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:8px">＋ ${l.catAdd}</div>
+        <input class="inp" id="cm-new-lbl" value="${esc(newLbl)}" placeholder="${l.catNewPh}" style="margin-bottom:6px"/>
+        <div class="lbs">${l.catEmojiL}</div><div class="eg">${EMOJIS.map(e=>`<span class="eo${newIco===e?' s':''}" onclick="window._cmNewEmo('${e}')">${e}</span>`).join('')}</div>
+        <div class="lbs">${l.catColorL}</div><div class="cg">${COLORS.map(c=>`<div class="co${newClr===c?' s':''}" style="background:${c}" onclick="window._cmNewClr('${c}')"></div>`).join('')}</div>
+        ${newLbl?`<div class="pvr"><span style="font-size:11px;color:#64748b">${l.catPreview}</span><span class="pill" style="background:${catBg(newClr)};color:${newClr};border-color:${newClr}">${newIco} ${esc(newLbl)}</span></div>`:''}
+        <button class="btn bp bw" style="margin-top:8px" onclick="window._cmAdd()">＋ ${l.catAdd}</button>
+      </div>
+      <div class="row" style="gap:6px"><button class="btn bp" style="flex:1" onclick="window._cmFinal()">${l.catSave}</button><button class="btn bg" onclick="hideModal()">${l.catCancel}</button></div>`,
+    ()=>{document.getElementById('cm-new-lbl')?.addEventListener('input',e=>{newLbl=e.target.value;render_cm();});});
+  };
+  Object.assign(window,{
+    _cmEdit:i=>{editIdx=editIdx===i?null:i;render_cm();},
+    _cmDel:i=>{cats.splice(i,1);if(editIdx===i)editIdx=null;render_cm();},
+    _cmEmo:(i,e)=>{cats[i]={...cats[i],icon:e};render_cm();},
+    _cmClr:(i,c)=>{cats[i]={...cats[i],color:c};render_cm();},
+    _cmSave:i=>{const inp=document.getElementById(`cm-lbl-${i}`);if(inp)cats[i]={...cats[i],label:inp.value.trim()||cats[i].label};editIdx=null;render_cm();},
+    _cmNewEmo:e=>{newIco=e;render_cm();},
+    _cmNewClr:c=>{newClr=c;render_cm();},
+    _cmAdd:()=>{const inp=document.getElementById('cm-new-lbl');newLbl=inp?.value?.trim()||'';if(!newLbl)return;cats.push({id:'cat_'+uid(),label:newLbl,icon:newIco,color:newClr});newLbl='';render_cm();},
+    _cmFinal:()=>{D.categories=cats;save();hideModal();render();},
+  });
+  render_cm();
+}
+
+// ============================================================
+// メインrender
+// ============================================================
+function render(){
+  if(curSec==='home'){selId?renderHomeDetail():renderHome();}
+  else if(curSec==='tasks')renderTasks();
+  else if(curSec==='map')renderMindmap();
+  else if(curSec==='shop')renderShopping();
+  else if(curSec==='cal')renderCalendar();
+  else if(curSec==='help')renderHelp();
+  else if(curSec==='lang')renderLangGrid();
+}
+
+// ============================================================
+// イベント / 起動
+// ============================================================
+document.getElementById('add-task-btn').addEventListener('click',()=>{
+  const inp=document.getElementById('new-task-inp'),title=inp.value.trim();if(!title)return;
+  addTask(title,null,newCat);inp.value='';document.getElementById('vh-task').textContent='';
+  selId=null;switchSec('home');
+});
+document.getElementById('new-task-inp').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('add-task-btn').click();});
+document.getElementById('mic-task').addEventListener('click',()=>startVoice('task'));
+document.getElementById('cal-prev').addEventListener('click',()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()-1,1);renderCalendar();});
+document.getElementById('cal-next').addEventListener('click',()=>{calMonth=new Date(calMonth.getFullYear(),calMonth.getMonth()+1,1);renderCalendar();});
+
+// ボトムナビのタップ処理（touchendで確実に反応させる）
+document.querySelectorAll('.nb').forEach(btn=>{
+  btn.addEventListener('click',()=>switchSec(btn.dataset.s));
+  btn.addEventListener('touchend',e=>{e.preventDefault();switchSec(btn.dataset.s);});
+});
+
+// Service Worker disabled
+if('serviceWorker' in navigator)navigator.serviceWorker.getRegistrations().then(regs=>regs.forEach(r=>r.unregister()));
+
+syncCatLabels();
+applyLang(curLang);
+render();
+</script>
+</body>
+</html>

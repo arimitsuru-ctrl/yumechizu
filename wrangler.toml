@@ -1,0 +1,5 @@
+name = "yumechizu-pages"
+compatibility_date = "2026-04-28"
+
+# Pages に公開する静的ファイルの場所
+pages_build_output_dir = "."

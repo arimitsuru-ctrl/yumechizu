@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "dev.pages.yumechizu.twa",
+    "sha256_cert_fingerprints": ["7E:C5:CF:67:65:27:66:F0:98:1C:23:1B:F7:EA:DA:90:27:BA:F8:4D:96:67:F8:4E:BF:A6:5D:C6:BB:1B:19:8C"]
+  }
+}]
