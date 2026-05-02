@@ -103,7 +103,7 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
 
 /* ─ Float panels ─ */
 .fov{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,0.25);display:none;pointer-events:none;} .fov.open{display:block;pointer-events:auto;}
-.fpanel{position:fixed;left:0;right:0;bottom:0;z-index:150;background:white;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,0.15);max-height:60vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding-bottom:var(--sb);pointer-events:none;}
+.fpanel{position:fixed;left:0;right:0;bottom:0;z-index:150;background:white;border-radius:20px 20px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,0.15);max-height:67vh;overflow-y:auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);padding-bottom:var(--sb);pointer-events:none;}
 .fpanel.open{transform:translateY(0);pointer-events:auto;}
 .fhandle{width:40px;height:4px;background:#e0f2fe;border-radius:2px;margin:10px auto 12px;}
 .fhdr{padding:0 14px 10px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #f0f9ff;margin-bottom:8px;}
@@ -271,7 +271,7 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
     <span style="font-size:16px;font-weight:700;color:#0e7490">📋 タスク詳細</span>
     <button class="btn bg" onclick="closeTaskFloat()" style="font-size:20px;padding:10px 20px;border-radius:12px;background:#e0f2fe;color:#0e7490">✕ 閉じる</button>
   </div>
-  <div style="padding:0 14px 24px;overflow-y:auto;max-height:65vh" id="task-float-body"></div>
+  <div style="padding:0 14px 24px;overflow-y:auto;min-height:55vh;max-height:62vh" id="task-float-body"></div>
 </div>
 
 <!-- マインドマップ フローティングキャンバス -->
