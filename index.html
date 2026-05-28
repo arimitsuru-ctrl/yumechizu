@@ -3183,33 +3183,42 @@ function loadJsPDF(){
 function svgToCanvas(svgEl, bgColor){
   return new Promise((resolve,reject)=>{
     try{
-      // SVGのviewBoxから実寸法を取得
+      // viewBoxから寸法取得
       const vb=svgEl.getAttribute('viewBox');
       let svgW=800,svgH=600;
-      if(vb){const parts=vb.split(/[\s,]+/);if(parts.length>=4){svgW=Math.round(parseFloat(parts[2]))||800;svgH=Math.round(parseFloat(parts[3]))||600;}}
+      if(vb){const p=vb.trim().split(/[\s,]+/);if(p.length>=4){svgW=Math.round(parseFloat(p[2]))||800;svgH=Math.round(parseFloat(p[3]))||600;}}
+
+      // ── SVGをクローンしてイベントハンドラー・style を除去 ──
+      // モバイルブラウザはイベントハンドラー付きSVGをimg.srcで読むとセキュリティ拒否する
+      const clone=svgEl.cloneNode(true);
+      // ルートSVGのstyle属性を削除（width:100%等がwidth/height属性より優先されてしまう）
+      clone.removeAttribute('style');
+      clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+      clone.setAttribute('width',String(svgW));
+      clone.setAttribute('height',String(svgH));
+      // 全子要素からイベントハンドラー属性を除去
+      const evAttrs=['onclick','onmousedown','onmouseup','ontouchstart','ontouchend','onmousemove','style'];
+      clone.querySelectorAll('*').forEach(el=>{
+        evAttrs.forEach(a=>el.removeAttribute(a));
+        // cursor:pointer 等のインラインstyleも除去済み
+      });
+
+      // キャンバス生成
       const scale=2;
       const canvas=document.createElement('canvas');
       canvas.width=svgW*scale;canvas.height=svgH*scale;
       const ctx=canvas.getContext('2d');
       ctx.fillStyle=bgColor||'#faf8d0';
       ctx.fillRect(0,0,canvas.width,canvas.height);
-      // SVGをシリアライズ（width/height/xmlns を明示的に付与してモバイル互換を確保）
-      const svgData=new XMLSerializer().serializeToString(svgEl);
-      // 名前空間を確保しつつ width/height を付与
-      let svgStr=svgData.includes('xmlns=')?svgData:svgData.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"');
-      // SVG要素にwidth/heightが無い場合は付与（iOS SafariはこれがないとImageが0×0になる）
-      if(!svgStr.match(/\bwidth=["']\d/)){svgStr=svgStr.replace('<svg','<svg width="'+svgW+'"');}
-      if(!svgStr.match(/\bheight=["']\d/)){svgStr=svgStr.replace('<svg','<svg height="'+svgH+'"');}
-      const blob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
-      const url=URL.createObjectURL(blob);
+
+      // SVGをシリアライズ → data URL（Blob URLよりモバイル互換性が高い）
+      const svgStr=new XMLSerializer().serializeToString(clone);
+      const dataUrl='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
+
       const img=new Image();
-      img.onload=()=>{
-        ctx.drawImage(img,0,0,canvas.width,canvas.height);
-        URL.revokeObjectURL(url);
-        resolve(canvas);
-      };
-      img.onerror=(e)=>{URL.revokeObjectURL(url);reject(new Error('SVG→Canvas変換失敗'));}
-      img.src=url;
+      img.onload=()=>{ctx.drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas);};
+      img.onerror=()=>reject(new Error('SVG→Canvas変換失敗（data URL）'));
+      img.src=dataUrl;
     }catch(e){reject(e);}
   });
 }
