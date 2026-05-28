@@ -3170,11 +3170,14 @@ function updatePdfHdrBtn(){
 // jsPDFを動的ロード
 function loadJsPDF(){
   return new Promise((resolve,reject)=>{
-    if(window.jspdf){resolve(window.jspdf.jsPDF);return;}
+    if(window.jspdf&&window.jspdf.jsPDF){resolve(window.jspdf.jsPDF);return;}
     const s=document.createElement('script');
     s.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-    s.onload=()=>resolve(window.jspdf.jsPDF);
-    s.onerror=reject;
+    s.onload=()=>{
+      try{resolve(window.jspdf.jsPDF);}
+      catch(e){reject(new Error('jsPDF初期化失敗: '+e.message));}
+    };
+    s.onerror=()=>reject(new Error('jsPDF CDNの読み込みに失敗しました（ネットワーク確認を）'));
     document.head.appendChild(s);
   });
 }
@@ -3188,38 +3191,42 @@ function svgToCanvas(svgEl, bgColor){
       let svgW=800,svgH=600;
       if(vb){const p=vb.trim().split(/[\s,]+/);if(p.length>=4){svgW=Math.round(parseFloat(p[2]))||800;svgH=Math.round(parseFloat(p[3]))||600;}}
 
-      // ── SVGをクローンしてイベントハンドラー・style を除去 ──
+      // iOS Safariはcanvasの最大解像度が約16MP（4096×4096相当）
+      // 超える場合はスケールダウン
+      let scale=2;
+      const MAX_PX=4096*4096;
+      if(svgW*scale*svgH*scale>MAX_PX){
+        scale=Math.sqrt(MAX_PX/(svgW*svgH))*0.9;
+      }
+      const cW=Math.floor(svgW*scale),cH=Math.floor(svgH*scale);
+
+      // SVGをクローン＆クリーンアップ
       // モバイルブラウザはイベントハンドラー付きSVGをimg.srcで読むとセキュリティ拒否する
       const clone=svgEl.cloneNode(true);
-      // ルートSVGのstyle属性を削除（width:100%等がwidth/height属性より優先されてしまう）
-      clone.removeAttribute('style');
+      clone.removeAttribute('style');// width:100%がwidth属性より優先されるのを防ぐ
       clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
       clone.setAttribute('width',String(svgW));
       clone.setAttribute('height',String(svgH));
-      // 全子要素からイベントハンドラー属性を除去
       const evAttrs=['onclick','onmousedown','onmouseup','ontouchstart','ontouchend','onmousemove','style'];
-      clone.querySelectorAll('*').forEach(el=>{
-        evAttrs.forEach(a=>el.removeAttribute(a));
-        // cursor:pointer 等のインラインstyleも除去済み
-      });
+      clone.querySelectorAll('*').forEach(el=>evAttrs.forEach(a=>el.removeAttribute(a)));
 
-      // キャンバス生成
-      const scale=2;
+      // Canvasに描画
       const canvas=document.createElement('canvas');
-      canvas.width=svgW*scale;canvas.height=svgH*scale;
+      canvas.width=cW;canvas.height=cH;
       const ctx=canvas.getContext('2d');
       ctx.fillStyle=bgColor||'#faf8d0';
-      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillRect(0,0,cW,cH);
 
-      // SVGをシリアライズ → data URL（Blob URLよりモバイル互換性が高い）
       const svgStr=new XMLSerializer().serializeToString(clone);
       const dataUrl='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgStr);
-
       const img=new Image();
-      img.onload=()=>{ctx.drawImage(img,0,0,canvas.width,canvas.height);resolve(canvas);};
-      img.onerror=()=>reject(new Error('SVG→Canvas変換失敗（data URL）'));
+      img.onload=()=>{
+        try{ctx.drawImage(img,0,0,cW,cH);resolve(canvas);}
+        catch(de){reject(new Error('Canvas描画失敗: '+de.message));}
+      };
+      img.onerror=()=>reject(new Error('SVGのImage変換失敗（ブラウザがSVGをimg.srcで読めない）'));
       img.src=dataUrl;
-    }catch(e){reject(e);}
+    }catch(e){reject(new Error('svgToCanvas例外: '+(e?.message||String(e))));}
   });
 }
 
@@ -3316,13 +3323,28 @@ async function exportMapPDF(){
     const collectIds=id=>{const t=tm[id];return t?[id,...(t.children||[]).flatMap(collectIds)]:[];};
     const allIds=new Set(selectedIds.flatMap(id=>collectIds(id)));
     const exportData={version:'2',exportedAt:new Date().toISOString(),tasks:D.tasks.filter(t=>allIds.has(String(t.id))||allIds.has(t.id)),categories:D.categories||[]};
-    doc.setProperties({title:'夢の地図',subject:'YUMECHIZU_EXPORT',author:'Yume no Chizu App',keywords:'YUMECHIZU_DATA:'+btoa(unescape(encodeURIComponent(JSON.stringify(exportData)))),creator:'Yume no Chizu v2'});
+    try{
+      doc.setProperties({title:'夢の地図',subject:'YUMECHIZU_EXPORT',author:'Yume no Chizu App',keywords:'YUMECHIZU_DATA:'+btoa(unescape(encodeURIComponent(JSON.stringify(exportData)))),creator:'Yume no Chizu v2'});
+    }catch(pe){console.warn('setProperties失敗（無視）:',pe);}
     const fname='yumechizu_mindmap_'+new Date().toISOString().slice(0,10)+'.pdf';
-    doc.save(fname);
+    // iOS Safari対応: doc.save()はpopupブロッカーで失敗する場合があるのでBlob+aタグで保存
+    try{
+      const pdfBlob=doc.output('blob');
+      const blobUrl=URL.createObjectURL(pdfBlob);
+      const a=document.createElement('a');
+      a.href=blobUrl;a.download=fname;
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(blobUrl);},3000);
+    }catch(se){
+      // フォールバック: jsPDF標準のsave()
+      try{doc.save(fname);}catch(se2){console.warn('doc.save失敗:',se2);}
+    }
     alert(l.code==='ja'?'✅ PDF出力完了！\n'+fname:'PDF exported!\n'+fname);
   }catch(e){
     console.error('PDF export error:',e);
-    alert('PDF出力エラー: '+e.message);
+    // e がErrorでない場合（ProgressEvent等）もメッセージを取得
+    const errMsg=e?.message||e?.type||String(e)||'不明なエラー';
+    alert('PDF出力エラー: '+errMsg);
   }
 }
 
