@@ -1,4 +1,4 @@
-const CACHE_VERSION = 97;
+const CACHE_VERSION = 98;
 const CACHE_NAME = `yumechizu-v${CACHE_VERSION}`;
 const STATIC_CACHE = `yumechizu-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `yumechizu-dynamic-v${CACHE_VERSION}`;
@@ -14,7 +14,7 @@ const STATIC_ASSETS = [
   '/home_AI.png',
   '/palette.png',
   '/momishibo.png',
-  '/pdf-icon.jpg'
+  '/PDF.png'
 ];
 
 // APIエンドポイント（Cloudflare WorkersのAPIのみ — CDNは含めない）
