@@ -219,7 +219,7 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
       <button id="pdf-hdr-btn" onclick="openPdfFloat()" title="PDF" style="background:none;border:none;cursor:pointer;padding:2px 4px;opacity:0.3;pointer-events:none;transition:opacity .2s;display:flex;align-items:center;justify-content:center;" aria-label="PDF">
         <img src="PDF.png" style="width:28px;height:28px;object-fit:contain;display:block;">
       </button>
-      <button class="hdr-btn" onclick="openCatManager()">⚙️</button><button onclick="location.reload(true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px 6px;color:rgba(255,255,255,0.7);">🔄</button>
+      <button class="hdr-btn" onclick="openCatManager()">⚙️</button><button id="pwa-install-btn" onclick="pwaInstall()" title="インストール" style="display:none;align-items:center;gap:3px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.35);border-radius:14px;color:#fff;font-size:10px;font-weight:700;padding:3px 9px;cursor:pointer;white-space:nowrap;">📲 インストール</button><button onclick="location.reload(true)" style="background:none;border:none;font-size:16px;cursor:pointer;padding:4px 6px;color:rgba(255,255,255,0.7);">🔄</button>
       <button class="hdr-btn" onclick="switchSec('lang')">🌐</button>
       <button class="hdr-btn" onclick="switchSec('transfer')">📤</button>
     </div>
@@ -229,7 +229,7 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
   <div id="pdf-float" style="display:none;position:fixed;top:52px;right:10px;z-index:300;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.18);border:1.5px solid #e0f2fe;padding:14px;min-width:200px;">
     <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📄 PDF</div>
     <button onclick="closePdfFloat();exportMapPDF();" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">📄 <span id="pdf-float-export-lbl">PDF出力</span></button>
-    <button onclick="closePdfFloat();importMapPDF();" id="pdf-float-import-btn" style="width:100%;background:#ede9fe;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 <span id="pdf-float-import-lbl">PDFインポート ✨</span></button>
+    <button onclick="closePdfFloat();importMapPDF();" id="pdf-float-import-btn" style="width:100%;background:#ede9fe;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 <span id="pdf-float-import-lbl">JSONインポート ✨</span></button>
     <input type="file" id="pdf-import-input" accept=".pdf" style="display:none" onchange="onPdfImportSelected(this)">
   </div>
   <!-- PDFフロート背景タップで閉じる -->
@@ -485,7 +485,7 @@ const LANGS={
     catNewPh:'カテゴリ名',catEmojiL:'絵文字：',catColorL:'カラー：',catPreview:'プレビュー：',
     tapToList:'タップして一覧 →',tapToStart:'✨ タップして始める →',
     apiKeySet:'✅ 暗号化して保存済み',apiKeyNotSet:'未設定（デモ）',
-    sketchTagline:'AIがあなたの夢をプロジェクト化（Llama）',sketchBadge:'🤖 AI機能',
+    sketchTagline:'AIがあなたの夢をプロジェクト化（Qwen3）',sketchBadge:'🤖 AI機能',
     innerAITitle:'今の心の色、おしえてください',innerAISub:'あなたの言葉を、静かに受け取ります。',
     wallpaperTitle:'壁紙の色設定',rgbLabel:'RGB カラー調整',
     iaBubbleMsg:'今のあなたの心の色は？\n心の色にあわせて壁紙を設定しましょう。',
@@ -512,7 +512,7 @@ const LANGS={
       {q:'マインドマップの使い方',a:'「マップ」画面でプロジェクトをタップするとマインドマップが開きます。ノードをタップするとタスク詳細へ。長押しで階層ドリルダウン（サブが2つ以上）またはチェック（単独・末端）できます。'},
       {q:'マインドマップの階層について',a:'第1階層：プロジェクト（クリーム）→第2階層：方針設定（薄紫）→第3階層：作業群（薄緑）→第4階層：具体的行動（薄オレンジ）→第5階層：すぐに取りかかる（薄藍）。◀ボタンで1つ上の階層に戻ります。'},
       {q:'タスクの完了処理について',a:'サブタスクが複数ある場合、全サブタスクが完了すると自動的に上位タスクも完了になります。単独サブタスクや末端タスクは長押しで完了チェックできます。'},
-      {q:'AI機能（夢スケッチ）について',a:'Cloudflare Workers経由でLlamaを使用します。APIキーはWorkerのSecret（環境変数）に安全に保管されており、アプリ内やGitHubには存在しません。'},
+      {q:'AI機能（夢スケッチ）について',a:'Cloudflare Workers AI経由でQwen3を使用します。APIキー不要 — Workerで安全に処理されます。'},
       {q:'プロジェクト達成フォルダとは？',a:'マップ画面でプロジェクトを長押し→「達成フォルダへ」で移動できます。達成フォルダ内では保存継続や完全削除が可能です。'},
       {q:'マインドマップの並び替えは？',a:'マップ画面の各プロジェクトカードの左端「☰」ハンドルをドラッグして上下に並び替えできます。'},
       {q:'フッターのナビゲーションについて',a:'左から：ヘルプ→マップ→タスク→ホーム（夢の地図）→カレンダー→買い物→色設定の順です。'},
@@ -534,7 +534,7 @@ const LANGS={
     catNewPh:'Category name',catEmojiL:'Emoji:',catColorL:'Color:',catPreview:'Preview:',
     tapToList:'Tap to view →',tapToStart:'✨ Tap to start →',
     apiKeySet:'✅ Encrypted & saved',apiKeyNotSet:'Not set (demo)',
-    sketchTagline:'AI turns your dreams into projects (Llama)',sketchBadge:'🤖 AI',
+    sketchTagline:'AI turns your dreams into projects (Qwen3)',sketchBadge:'🤖 AI',
     innerAITitle:'What color is your heart right now?',innerAISub:'Your words are quietly received.',
     wallpaperTitle:'Wallpaper Color',rgbLabel:'RGB Color Adjust',
     iaBubbleMsg:'What color is your heart now?\nSet your wallpaper to match your heart.',
@@ -557,7 +557,7 @@ const LANGS={
     ],
     helpQA:[
       {q:'How to add a task?',a:'Go to Tasks, type a name and tap Add. Use 🎤 for voice.'},
-      {q:"About AI (Dream Sketch)",a:"Uses Llama (meta-llama/llama-3.3-70b-instruct) via Cloudflare Workers.\nAPI key is stored securely in Worker Secrets — never in the app or GitHub."},
+      {q:"About AI (Dream Sketch)",a:"Uses Qwen3 (@cf/qwen/qwen3-30b-a3b-fp8) via Cloudflare Workers AI.\nNo API key required — processed securely in the Worker."},
       {q:'What is the Archive folder?',a:'Long-press a project card in Map → move to archive. In the archive you can restore or permanently delete.'},
       {q:'How to reorder maps?',a:'Drag the ☰ handle on the left of each project card up or down.'},
       {q:'How to transfer data?',a:'Tap 📤, save the file and share via cloud or email.'},
@@ -567,19 +567,19 @@ const LANGS={
   zh:{code:'zh',name:'中文',appName:'梦想地图',speechLang:'zh-CN',home:'首页',tasks:'任务',map:'思维导图',shop:'购物',cal:'历史',help:'帮助',transfer:'数据迁移',lang:'语言',newtask:'新任务',addtask:'添加',catmgr:'管理分类',suggestLabel:'最近建议：',taskList:'任务列表',pending:'未购买',bought:'已购买',noShop:'购物列表为空',subAdd:'添加子任务',dueDate:'截止日期',repeat:'重复',repeatNone:'不重复',daily:'每天',weekly:'每周',monthly:'每月',yearly:'每年',done:'✅ 完成',undone:'🔄 撤销',del:'🗑',close:'✕',noTask:'添加任务开始吧！',exportTitle:'📥 导出',exportDesc:'将数据保存为文件共享。',exportBtn:'📁 保存文件',importTitle:'📤 导入',importDesc:'选择保存的文件以恢复数据。',importBtn:'📂 选择文件',importOk:'✅ 导入成功！',importErr:'❌ 无法读取文件。',langSelect:'选择语言',micOn:'● 录音中...',catFixed:'固定',catSave:'💾 保存',catCancel:'取消',catAdd:'＋ 添加',catNewPh:'分类名称',catEmojiL:'表情：',catColorL:'颜色：',catPreview:'预览：',tapToList:'点击查看 →',tapToStart:'✨ 点击开始 →',apiKeySet:'✅ 已加密保存',apiKeyNotSet:'未设置（演示）',sketchTagline:'AI将您的梦想变为项目（无需密钥）',sketchBadge:'🤖 AI功能',dreamSketchTitle:'✨ 梦想草图',dreamSketchIntro:'告诉我您的兴趣和梦想！',dreamRegisterBtn:'🚀 注册为项目',dreamRegistered:'✅ 已添加到任务！',archiveTitle:'🏆 已完成项目',archiveEmpty:'暂无已完成项目',archiveMove:'移至归档',archiveRestore:'恢复活跃',archiveDelete:'永久删除',mapItems:'项',mapDone:'完成',archiveAchievedAt:'达成',archiveTaskCount:'任务',archiveMoveConfirm:'，移至归档？',colorLockShort:'AI输入仅限付费',colorLockMsg:'AI颜色输入仅供付费用户使用。\n请使用滑块或颜色按钮。',iaBubbleMsg:'你现在的心情是什么颜色？\n让我们用这个颜色来设置壁纸吧。',mapOrder:'排序',weekdays:['日','一','二','三','四','五','六'],
     wallpaperTitle:'壁纸颜色设置',rgbLabel:'RGB 颜色调整',iaBubbleMsg:'现在你心中的颜色是什么？\n根据心情设置壁纸颜色吧。',colorInputPh:'例：天蓝色、深海、三文鱼粉…',colorSetting:'颜色设置',shopOtherPh:'其他（自由填写）',memoPh:'输入备注…',memoTitle:'备忘录',
     innerAITitle:'现在心中的颜色是？',innerAISub:'静静地接受您的话语。',
-    defCats:[{id:'work',label:'工作',icon:'💼',color:'#3b82f6'},{id:'life',label:'生活',icon:'🍀',color:'#10b981'},{id:'dream',label:'梦想',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'梦想草图',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'如何添加任务？',a:'进入任务界面，输入名称并点击添加。'},{q:'AI功能如何使用？',a:'梦想草图使用Llama 3.3 70B通过Puter.js提供，完全免费。'},{q:'数据如何迁移？',a:'点击📤，保存文件并通过云盘或邮件分享。'}]},
+    defCats:[{id:'work',label:'工作',icon:'💼',color:'#3b82f6'},{id:'life',label:'生活',icon:'🍀',color:'#10b981'},{id:'dream',label:'梦想',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'梦想草图',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'如何添加任务？',a:'进入任务界面，输入名称并点击添加。'},{q:'AI功能如何使用？',a:'梦想草图使用Qwen3通过Cloudflare Workers AI提供。'},{q:'数据如何迁移？',a:'点击📤，保存文件并通过云盘或邮件分享。'}]},
   ko:{code:'ko',name:'한국어',appName:'꿈의 지도',speechLang:'ko-KR',home:'홈',tasks:'할일',map:'마인드맵',shop:'쇼핑',cal:'기록',help:'도움말',transfer:'데이터전송',lang:'언어',newtask:'새 할일',addtask:'추가',catmgr:'카테고리',suggestLabel:'최근 추천:',taskList:'할일 목록',pending:'미구매',bought:'구매완료',noShop:'쇼핑 목록이 비어있습니다',subAdd:'하위작업 추가',dueDate:'마감일',repeat:'반복',repeatNone:'반복 없음',daily:'매일',weekly:'매주',monthly:'매월',yearly:'매년',done:'✅ 완료',undone:'🔄 취소',del:'🗑',close:'✕',noTask:'할일을 추가해보세요!',exportTitle:'📥 내보내기',exportDesc:'파일로 저장하여 공유하세요.',exportBtn:'📁 파일 저장',importTitle:'📤 가져오기',importDesc:'저장된 파일을 선택하세요.',importBtn:'📂 파일 선택',importOk:'✅ 가져오기 완료!',importErr:'❌ 파일을 읽을 수 없습니다.',langSelect:'언어를 선택하세요',micOn:'● 녹음 중...',catFixed:'고정',catSave:'💾 저장',catCancel:'취소',catAdd:'＋ 추가',catNewPh:'카테고리 이름',catEmojiL:'이모지:',catColorL:'색상:',catPreview:'미리보기:',tapToList:'탭하여 목록 →',tapToStart:'✨ 탭하여 시작 →',apiKeySet:'✅ 암호화 저장됨',apiKeyNotSet:'미설정 (데모)',sketchTagline:'AI가 꿈을 프로젝트로 만들어드립니다',sketchBadge:'🤖 AI기능',dreamSketchTitle:'✨ 꿈 스케치',dreamSketchIntro:'관심사와 꿈에 대해 알려주세요!',dreamRegisterBtn:'🚀 프로젝트로 등록',dreamRegistered:'✅ 할일에 추가되었습니다!',archiveTitle:'🏆 달성 프로젝트',archiveEmpty:'달성한 프로젝트가 없습니다',archiveMove:'보관함으로',archiveRestore:'활성으로 복원',archiveDelete:'영구 삭제',mapItems:'건',mapDone:'완료',archiveAchievedAt:'달성',archiveTaskCount:'작업',archiveMoveConfirm:'을 보관함으로 이동?',colorLockShort:'AI 입력은 유료 기능',colorLockMsg:'AI 색상 입력은 유료 사용자 전용입니다.\n슬라이더 또는 색상 버튼을 사용하세요.',iaBubbleMsg:'지금 마음의 색깔은 무엇인가요?\n그 색깔로 배경화면을 설정해 봅시다.',mapOrder:'순서변경',weekdays:['일','월','화','수','목','금','토'],
     wallpaperTitle:'배경화면 색상 설정',rgbLabel:'RGB 색상 조정',iaBubbleMsg:'지금 당신 마음의 색은？\n마음의 색에 맞춰 배경화면을 설정해요.',colorInputPh:'예: 하늘색, 심해, 연어핑크…',colorSetting:'색상 설정',shopOtherPh:'기타 (자유 입력)',memoPh:'메모 입력…',memoTitle:'메모',
     innerAITitle:'지금 마음의 색을 알려주세요',innerAISub:'당신의 말을 조용히 받아들입니다.',
-    defCats:[{id:'work',label:'업무',icon:'💼',color:'#3b82f6'},{id:'life',label:'생활',icon:'🍀',color:'#10b981'},{id:'dream',label:'꿈',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'꿈 스케치',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'할일을 추가하려면?',a:'할일 화면에서 이름을 입력하고 추가를 누르세요.'},{q:'AI 기능은?',a:'Puter.js를 통해 Llama 3.3 70B를 사용합니다. 완전 무료.'},{q:'데이터를 이전하려면?',a:'📤 버튼을 눌러 파일로 저장한 후 공유하세요.'}]},
-  es:{code:'es',name:'Español',appName:'Mapa de Sueños',speechLang:'es-ES',home:'Inicio',tasks:'Tareas',map:'Mapa',shop:'Compras',cal:'Historial',help:'Ayuda',transfer:'Transferir',lang:'Idioma',newtask:'Nueva Tarea',addtask:'Agregar',catmgr:'Categorías',suggestLabel:'Sugerencias:',taskList:'Lista de Tareas',pending:'Pendiente',bought:'Comprado',noShop:'La lista está vacía',subAdd:'Agregar Subtarea',dueDate:'Fecha límite',repeat:'Repetir',repeatNone:'Sin repetición',daily:'Diario',weekly:'Semanal',monthly:'Mensual',yearly:'Anual',done:'✅ Completar',undone:'🔄 Deshacer',del:'🗑',close:'✕',noTask:'¡Agrega una tarea!',exportTitle:'📥 Exportar',exportDesc:'Guarda datos como archivo.',exportBtn:'📁 Guardar',importTitle:'📤 Importar',importDesc:'Selecciona el archivo guardado.',importBtn:'📂 Seleccionar',importOk:'✅ ¡Éxito!',importErr:'❌ Error.',langSelect:'Seleccionar Idioma',micOn:'● Grabando...',catFixed:'Fijo',catSave:'💾 Guardar',catCancel:'Cancelar',catAdd:'＋ Agregar',catNewPh:'Nombre',catEmojiL:'Emoji:',catColorL:'Color:',catPreview:'Vista previa:',tapToList:'Ver lista →',tapToStart:'✨ Empezar →',apiKeySet:'✅ Cifrado',apiKeyNotSet:'No config.',sketchTagline:'IA sin clave',sketchBadge:'🤖 IA',dreamSketchTitle:'✨ Boceto',dreamSketchIntro:'¡Cuéntame tus intereses!',dreamRegisterBtn:'🚀 Registrar',dreamRegistered:'✅ ¡Agregado!',archiveTitle:'🏆 Logros',archiveEmpty:'Sin proyectos logrados',archiveMove:'Archivar',archiveRestore:'Restaurar',archiveDelete:'Eliminar',mapItems:' ítems',mapDone:' hechas',archiveAchievedAt:'Logrado',archiveTaskCount:'tareas',archiveMoveConfirm:' — ¿mover al archivo?',colorLockShort:'IA: solo pago',colorLockMsg:'La entrada de color IA es para usuarios de pago.\nUse el deslizador o los botones de color.',iaBubbleMsg:'¿De qué color está tu corazón ahora?\nEstablezcamos el fondo con ese color.',mapOrder:'Reordenar',weekdays:['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],wallpaperTitle:'Color de Fondo',rgbLabel:'Ajuste RGB',iaBubbleMsg:'¿Cuál es el color de tu corazón ahora?\nConfigura el fondo según tu estado.',colorInputPh:'ej. azul cielo, océano…',colorSetting:'Color',shopOtherPh:'Otro (libre)',memoPh:'Escribe una nota…',memoTitle:'Nota',innerAITitle:'¿Cuál es el color de tu corazón?',innerAISub:'Recibimos tus palabras en silencio.',defCats:[{id:'work',label:'Trabajo',icon:'💼',color:'#3b82f6'},{id:'life',label:'Vida',icon:'🍀',color:'#10b981'},{id:'dream',label:'Sueño',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Boceto',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'¿Cómo agregar tarea?',a:'Ve a Tareas, escribe y toca Agregar.'},{q:'¿AI sin clave?',a:'Usa Llama 3.3 70B vía Puter.js (gratis).'}]},
-  pt:{code:'pt',name:'Português',appName:'Mapa dos Sonhos',speechLang:'pt-BR',home:'Início',tasks:'Tarefas',map:'Mapa',shop:'Compras',cal:'Histórico',help:'Ajuda',transfer:'Transferir',lang:'Idioma',newtask:'Nova Tarefa',addtask:'Adicionar',catmgr:'Categorias',suggestLabel:'Sugestões:',taskList:'Lista de Tarefas',pending:'Pendente',bought:'Comprado',noShop:'Lista vazia',subAdd:'Subtarefa',dueDate:'Prazo',repeat:'Repetir',repeatNone:'Sem repetição',daily:'Diário',weekly:'Semanal',monthly:'Mensal',yearly:'Anual',done:'✅ Concluir',undone:'🔄 Desfazer',del:'🗑',close:'✕',noTask:'Adicione uma tarefa!',exportTitle:'📥 Exportar',exportDesc:'Salve dados como arquivo.',exportBtn:'📁 Salvar',importTitle:'📤 Importar',importDesc:'Selecione o arquivo.',importBtn:'📂 Selecionar',importOk:'✅ Concluído!',importErr:'❌ Erro.',langSelect:'Selecionar Idioma',micOn:'● Gravando...',catFixed:'Fixo',catSave:'💾 Salvar',catCancel:'Cancelar',catAdd:'＋ Adicionar',catNewPh:'Nome',catEmojiL:'Emoji:',catColorL:'Cor:',catPreview:'Prévia:',tapToList:'Ver →',tapToStart:'✨ Começar →',apiKeySet:'✅ Criptografado',apiKeyNotSet:'Não config.',sketchTagline:'IA sem chave',sketchBadge:'🤖 IA',dreamSketchTitle:'✨ Esboço',dreamSketchIntro:'Fale sobre seus sonhos!',dreamRegisterBtn:'🚀 Registrar',dreamRegistered:'✅ Adicionado!',archiveTitle:'🏆 Conquistas',archiveEmpty:'Sem projetos conquistas',archiveMove:'Arquivar',archiveRestore:'Restaurar',archiveDelete:'Excluir',mapItems:' itens',mapDone:' feitas',archiveAchievedAt:'Conquistado',archiveTaskCount:'tarefas',archiveMoveConfirm:' — mover para arquivo?',colorLockShort:'IA: só pago',colorLockMsg:'A entrada de cor IA é para usuários pagos.\nUse o controle deslizante ou os botões de cor.',iaBubbleMsg:'Qual é a cor do seu coração agora?\nVamos definir o papel de parede com essa cor.',mapOrder:'Reordenar',weekdays:['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],wallpaperTitle:'Cor do Fundo',rgbLabel:'Ajuste RGB',iaBubbleMsg:'Qual a cor do seu coração agora?\nDefina o fundo conforme seu estado.',colorInputPh:'ex. azul céu, oceano…',colorSetting:'Cor',shopOtherPh:'Outro (livre)',memoPh:'Escreva uma nota…',memoTitle:'Nota',innerAITitle:'Qual a cor do seu coração?',innerAISub:'Recebemos suas palavras em silêncio.',defCats:[{id:'work',label:'Trabalho',icon:'💼',color:'#3b82f6'},{id:'life',label:'Vida',icon:'🍀',color:'#10b981'},{id:'dream',label:'Sonho',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Esboço',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Como adicionar?',a:'Vá em Tarefas, escreva e toque Adicionar.'},{q:'IA sem chave?',a:'Usa Llama 3.3 70B via Puter.js (grátis).'}]},
-  de:{code:'de',name:'Deutsch',appName:'Traumkarte',speechLang:'de-DE',home:'Start',tasks:'Aufgaben',map:'Mindmap',shop:'Einkaufen',cal:'Verlauf',help:'Hilfe',transfer:'Übertragen',lang:'Sprache',newtask:'Neue Aufgabe',addtask:'Hinzufügen',catmgr:'Kategorien',suggestLabel:'Vorschläge:',taskList:'Aufgabenliste',pending:'Ausstehend',bought:'Gekauft',noShop:'Liste leer',subAdd:'Unteraufgabe',dueDate:'Fälligkeit',repeat:'Wiederholen',repeatNone:'Kein',daily:'Täglich',weekly:'Wöchentlich',monthly:'Monatlich',yearly:'Jährlich',done:'✅ Abschließen',undone:'🔄 Rückgängig',del:'🗑',close:'✕',noTask:'Aufgabe hinzufügen!',exportTitle:'📥 Exportieren',exportDesc:'Daten als Datei speichern.',exportBtn:'📁 Speichern',importTitle:'📤 Importieren',importDesc:'Gespeicherte Datei auswählen.',importBtn:'📂 Auswählen',importOk:'✅ Erfolgreich!',importErr:'❌ Fehler.',langSelect:'Sprache wählen',micOn:'● Aufnahme...',catFixed:'Fest',catSave:'💾 Speichern',catCancel:'Abbrechen',catAdd:'＋ Hinzufügen',catNewPh:'Name',catEmojiL:'Emoji:',catColorL:'Farbe:',catPreview:'Vorschau:',tapToList:'Liste →',tapToStart:'✨ Starten →',apiKeySet:'✅ Verschlüsselt',apiKeyNotSet:'Nicht gesetzt',sketchTagline:'KI ohne Schlüssel',sketchBadge:'🤖 KI',dreamSketchTitle:'✨ Traumskizze',dreamSketchIntro:'Erzähl von deinen Träumen!',dreamRegisterBtn:'🚀 Registrieren',dreamRegistered:'✅ Hinzugefügt!',archiveTitle:'🏆 Erreichte Projekte',archiveEmpty:'Keine erreichten Projekte',archiveMove:'Archivieren',archiveRestore:'Wiederherstellen',archiveDelete:'Löschen',mapItems:' Eintr.',mapDone:' erled.',archiveAchievedAt:'Erreicht',archiveTaskCount:'Aufgaben',archiveMoveConfirm:' — archivieren?',colorLockShort:'KI-Eingabe: kostenpflichtig',colorLockMsg:'KI-Farbeingabe ist nur für zahlende Nutzer.\nBitte Schieberegler oder Farbbuttons verwenden.',iaBubbleMsg:'Welche Farbe hat dein Herz gerade?\nLass uns das Hintergrundbild passend einstellen.',mapOrder:'Sortieren',weekdays:['So','Mo','Di','Mi','Do','Fr','Sa'],wallpaperTitle:'Hintergrundfarbe',rgbLabel:'RGB Anpassung',iaBubbleMsg:'Welche Farbe hat dein Herz gerade?\nStelle den Hintergrund passend ein.',colorInputPh:'z.B. Himmelblau, Ozean…',colorSetting:'Farbe',shopOtherPh:'Sonstiges (frei)',memoPh:'Notiz eingeben…',memoTitle:'Notiz',innerAITitle:'Welche Farbe hat dein Herz?',innerAISub:'Wir empfangen deine Worte still.',defCats:[{id:'work',label:'Arbeit',icon:'💼',color:'#3b82f6'},{id:'life',label:'Leben',icon:'🍀',color:'#10b981'},{id:'dream',label:'Traum',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Traumskizze',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Aufgabe hinzufügen?',a:'Gehe zu Aufgaben, gib einen Namen ein.'},{q:'KI ohne Schlüssel?',a:'Nutzt Llama 3.3 70B via Puter.js (kostenlos).'}]},
-  ar:{code:'ar',name:'العربية',appName:'خريطة الأحلام',speechLang:'ar-SA',home:'الرئيسية',tasks:'المهام',map:'خريطة',shop:'تسوق',cal:'السجل',help:'مساعدة',transfer:'نقل',lang:'اللغة',newtask:'مهمة جديدة',addtask:'إضافة',catmgr:'الفئات',suggestLabel:'اقتراحات:',taskList:'قائمة المهام',pending:'معلق',bought:'تم الشراء',noShop:'القائمة فارغة',subAdd:'مهمة فرعية',dueDate:'الاستحقاق',repeat:'تكرار',repeatNone:'لا',daily:'يومياً',weekly:'أسبوعياً',monthly:'شهرياً',yearly:'سنوياً',done:'✅ إنجاز',undone:'🔄 إلغاء',del:'🗑',close:'✕',noTask:'أضف مهمة!',exportTitle:'📥 تصدير',exportDesc:'احفظ البيانات كملف.',exportBtn:'📁 حفظ',importTitle:'📤 استيراد',importDesc:'اختر الملف المحفوظ.',importBtn:'📂 اختر',importOk:'✅ تم!',importErr:'❌ خطأ.',langSelect:'اختر اللغة',micOn:'● تسجيل...',catFixed:'ثابت',catSave:'💾 حفظ',catCancel:'إلغاء',catAdd:'＋ إضافة',catNewPh:'الاسم',catEmojiL:'رمز:',catColorL:'لون:',catPreview:'معاينة:',tapToList:'القائمة →',tapToStart:'✨ ابدأ →',apiKeySet:'✅ مشفر',apiKeyNotSet:'غير مضبوط',sketchTagline:'ذكاء اصطناعي مجاني',sketchBadge:'🤖 ذكاء',dreamSketchTitle:'✨ رسم الحلم',dreamSketchIntro:'أخبرني عن أحلامك!',dreamRegisterBtn:'🚀 تسجيل',dreamRegistered:'✅ تمت الإضافة!',archiveTitle:'🏆 المشاريع المنجزة',archiveEmpty:'لا توجد مشاريع منجزة',archiveMove:'للأرشيف',archiveRestore:'استعادة',archiveDelete:'حذف',mapItems:' عناصر',mapDone:' منجز',archiveAchievedAt:'أُنجز',archiveTaskCount:'مهام',archiveMoveConfirm:' — نقل للأرشيف؟',colorLockShort:'إدخال AI مدفوع فقط',colorLockMsg:'إدخال الألوان بالذكاء الاصطناعي للمستخدمين المدفوعين فقط.\nاستخدم شريط التمرير أو أزرار الألوان.',iaBubbleMsg:'ما لون قلبك الآن؟\nلنضبط خلفية الشاشة لتناسب مزاجك.',mapOrder:'ترتيب',weekdays:['أح','إث','ثل','أر','خم','جم','سب'],wallpaperTitle:'لون الخلفية',rgbLabel:'ضبط RGB',iaBubbleMsg:'ما لون قلبك الآن؟\nاضبط الخلفية حسب حالتك.',colorInputPh:'مثل: أزرق سمائي…',colorSetting:'لون',shopOtherPh:'أخرى (حر)',memoPh:'كتابة ملاحظة…',memoTitle:'ملاحظة',innerAITitle:'ما لون قلبك؟',innerAISub:'نتلقى كلماتك بهدوء.',defCats:[{id:'work',label:'عمل',icon:'💼',color:'#3b82f6'},{id:'life',label:'حياة',icon:'🍀',color:'#10b981'},{id:'dream',label:'حلم',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'رسم الحلم',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'كيف أضيف مهمة؟',a:'اذهب إلى المهام وأدخل الاسم.'},{q:'الذكاء الاصطناعي مجاني؟',a:'نعم، Llama 3.3 70B عبر Puter.js مجاناً.'}]},
-  ru:{code:'ru',name:'Русский',appName:'Карта Мечты',speechLang:'ru-RU',home:'Главная',tasks:'Задачи',map:'Карта',shop:'Покупки',cal:'История',help:'Помощь',transfer:'Перенос',lang:'Язык',newtask:'Новая задача',addtask:'Добавить',catmgr:'Категории',suggestLabel:'Предложения:',taskList:'Список задач',pending:'Не куплено',bought:'Куплено',noShop:'Список пуст',subAdd:'Подзадача',dueDate:'Срок',repeat:'Повтор',repeatNone:'Нет',daily:'Ежедневно',weekly:'Еженедельно',monthly:'Ежемесячно',yearly:'Ежегодно',done:'✅ Завершить',undone:'🔄 Отменить',del:'🗑',close:'✕',noTask:'Добавьте задачу!',exportTitle:'📥 Экспорт',exportDesc:'Сохраните данные как файл.',exportBtn:'📁 Сохранить',importTitle:'📤 Импорт',importDesc:'Выберите файл.',importBtn:'📂 Выбрать',importOk:'✅ Готово!',importErr:'❌ Ошибка.',langSelect:'Выберите язык',micOn:'● Запись...',catFixed:'Фикс.',catSave:'💾 Сохранить',catCancel:'Отмена',catAdd:'＋ Добавить',catNewPh:'Название',catEmojiL:'Эмодзи:',catColorL:'Цвет:',catPreview:'Просмотр:',tapToList:'Список →',tapToStart:'✨ Начать →',apiKeySet:'✅ Зашифровано',apiKeyNotSet:'Не установлен',sketchTagline:'ИИ без ключа',sketchBadge:'🤖 ИИ',dreamSketchTitle:'✨ Эскиз',dreamSketchIntro:'Расскажите о своих мечтах!',dreamRegisterBtn:'🚀 Зарегистрировать',dreamRegistered:'✅ Добавлено!',archiveTitle:'🏆 Завершённые проекты',archiveEmpty:'Нет завершённых проектов',archiveMove:'В архив',archiveRestore:'Восстановить',archiveDelete:'Удалить',mapItems:' эл.',mapDone:' вып.',archiveAchievedAt:'Завершено',archiveTaskCount:'задач',archiveMoveConfirm:' — в архив?',colorLockShort:'ИИ-ввод: только платно',colorLockMsg:'Ввод цвета ИИ доступен только платным пользователям.\nИспользуйте ползунок или кнопки цвета.',iaBubbleMsg:'Какого цвета ваше сердце сейчас?\nДавайте установим обои под ваше настроение.',mapOrder:'Сортировка',weekdays:['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],wallpaperTitle:'Цвет обоев',rgbLabel:'Настройка RGB',iaBubbleMsg:'Какой цвет у вашего сердца?\nНастройте обои под своё настроение.',colorInputPh:'напр. небесно-голубой…',colorSetting:'Цвет',shopOtherPh:'Другое (свободно)',memoPh:'Введите заметку…',memoTitle:'Заметка',innerAITitle:'Какой цвет у вашего сердца?',innerAISub:'Мы тихо принимаем ваши слова.',defCats:[{id:'work',label:'Работа',icon:'💼',color:'#3b82f6'},{id:'life',label:'Жизнь',icon:'🍀',color:'#10b981'},{id:'dream',label:'Мечта',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Эскиз',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Как добавить задачу?',a:'Перейдите в Задачи и введите название.'},{q:'ИИ без ключа?',a:'Да, Llama 3.3 70B через Puter.js бесплатно.'}]},
-  tl:{code:'tl',name:'Filipino',appName:'Mapa ng Pangarap',speechLang:'fil-PH',home:'Tahanan',tasks:'Gawain',map:'Mapa',shop:'Pamimili',cal:'Kasaysayan',help:'Tulong',transfer:'Ilipat',lang:'Wika',newtask:'Bagong Gawain',addtask:'Idagdag',catmgr:'Kategorya',suggestLabel:'Mungkahi:',taskList:'Listahan ng Gawain',pending:'Hindi pa',bought:'Nabili',noShop:'Walang laman',subAdd:'Subtask',dueDate:'Takdang Petsa',repeat:'Ulitin',repeatNone:'Wala',daily:'Araw-araw',weekly:'Lingguhan',monthly:'Buwanan',yearly:'Taon-taon',done:'✅ Tapos',undone:'🔄 Bawiin',del:'🗑',close:'✕',noTask:'Magdagdag ng gawain!',exportTitle:'📥 I-export',exportDesc:'I-save bilang file.',exportBtn:'📁 I-save',importTitle:'📤 I-import',importDesc:'Piliin ang file.',importBtn:'📂 Pumili',importOk:'✅ Matagumpay!',importErr:'❌ Error.',langSelect:'Pumili ng Wika',micOn:'● Nagre-record...',catFixed:'Nakatali',catSave:'💾 I-save',catCancel:'Kanselahin',catAdd:'＋ Idagdag',catNewPh:'Pangalan',catEmojiL:'Emoji:',catColorL:'Kulay:',catPreview:'Preview:',tapToList:'Listahan →',tapToStart:'✨ Magsimula →',apiKeySet:'✅ Naka-encrypt',apiKeyNotSet:'Hindi itinakda',sketchTagline:'AI libre, walang key',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ Sketch',dreamSketchIntro:'Sabihin ang iyong mga pangarap!',dreamRegisterBtn:'🚀 Irehistro',dreamRegistered:'✅ Naidagdag!',archiveTitle:'🏆 Natapos na Proyekto',archiveEmpty:'Walang natapos',archiveMove:'I-archive',archiveRestore:'Ibalik',archiveDelete:'Burahin',mapItems:' item',mapDone:' tapos',archiveAchievedAt:'Nakamit',archiveTaskCount:'gawain',archiveMoveConfirm:' — ilipat sa archive?',colorLockShort:'AI input: bayad lamang',colorLockMsg:'Ang AI color input ay para sa mga bayad na gumagamit.\nGamitin ang slider o mga kulay na butones.',iaBubbleMsg:'Anong kulay ang iyong puso ngayon?\nItakda natin ang wallpaper ayon sa iyong pakiramdam.',mapOrder:'Ayusin',weekdays:['Lin','Lun','Mar','Miy','Huw','Biy','Sab'],wallpaperTitle:'Kulay ng Background',rgbLabel:'RGB Ayos',iaBubbleMsg:'Ano ang kulay ng iyong puso ngayon?\nI-set ang background ayon sa iyong damdamin.',colorInputPh:'hal. asul na langit…',colorSetting:'Kulay',shopOtherPh:'Iba pa (malaya)',memoPh:'Isulat ang tala…',memoTitle:'Tala',innerAITitle:'Ano ang kulay ng iyong puso?',innerAISub:'Tahimik naming tinatanggap ang iyong mga salita.',defCats:[{id:'work',label:'Trabaho',icon:'💼',color:'#3b82f6'},{id:'life',label:'Buhay',icon:'🍀',color:'#10b981'},{id:'dream',label:'Pangarap',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Sketch',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Paano magdagdag?',a:'Pumunta sa Gawain at i-type ang pangalan.'},{q:'AI libre?',a:'Oo, Llama 3.3 70B sa Puter.js (libre).'}]},
+    defCats:[{id:'work',label:'업무',icon:'💼',color:'#3b82f6'},{id:'life',label:'생활',icon:'🍀',color:'#10b981'},{id:'dream',label:'꿈',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'꿈 스케치',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'할일을 추가하려면?',a:'할일 화면에서 이름을 입력하고 추가를 누르세요.'},{q:'AI 기능은?',a:'Cloudflare Workers AI를 통해 Qwen3를 사용합니다。'},{q:'데이터를 이전하려면?',a:'📤 버튼을 눌러 파일로 저장한 후 공유하세요.'}]},
+  es:{code:'es',name:'Español',appName:'Mapa de Sueños',speechLang:'es-ES',home:'Inicio',tasks:'Tareas',map:'Mapa',shop:'Compras',cal:'Historial',help:'Ayuda',transfer:'Transferir',lang:'Idioma',newtask:'Nueva Tarea',addtask:'Agregar',catmgr:'Categorías',suggestLabel:'Sugerencias:',taskList:'Lista de Tareas',pending:'Pendiente',bought:'Comprado',noShop:'La lista está vacía',subAdd:'Agregar Subtarea',dueDate:'Fecha límite',repeat:'Repetir',repeatNone:'Sin repetición',daily:'Diario',weekly:'Semanal',monthly:'Mensual',yearly:'Anual',done:'✅ Completar',undone:'🔄 Deshacer',del:'🗑',close:'✕',noTask:'¡Agrega una tarea!',exportTitle:'📥 Exportar',exportDesc:'Guarda datos como archivo.',exportBtn:'📁 Guardar',importTitle:'📤 Importar',importDesc:'Selecciona el archivo guardado.',importBtn:'📂 Seleccionar',importOk:'✅ ¡Éxito!',importErr:'❌ Error.',langSelect:'Seleccionar Idioma',micOn:'● Grabando...',catFixed:'Fijo',catSave:'💾 Guardar',catCancel:'Cancelar',catAdd:'＋ Agregar',catNewPh:'Nombre',catEmojiL:'Emoji:',catColorL:'Color:',catPreview:'Vista previa:',tapToList:'Ver lista →',tapToStart:'✨ Empezar →',apiKeySet:'✅ Cifrado',apiKeyNotSet:'No config.',sketchTagline:'IA sin clave',sketchBadge:'🤖 IA',dreamSketchTitle:'✨ Boceto',dreamSketchIntro:'¡Cuéntame tus intereses!',dreamRegisterBtn:'🚀 Registrar',dreamRegistered:'✅ ¡Agregado!',archiveTitle:'🏆 Logros',archiveEmpty:'Sin proyectos logrados',archiveMove:'Archivar',archiveRestore:'Restaurar',archiveDelete:'Eliminar',mapItems:' ítems',mapDone:' hechas',archiveAchievedAt:'Logrado',archiveTaskCount:'tareas',archiveMoveConfirm:' — ¿mover al archivo?',colorLockShort:'IA: solo pago',colorLockMsg:'La entrada de color IA es para usuarios de pago.\nUse el deslizador o los botones de color.',iaBubbleMsg:'¿De qué color está tu corazón ahora?\nEstablezcamos el fondo con ese color.',mapOrder:'Reordenar',weekdays:['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'],wallpaperTitle:'Color de Fondo',rgbLabel:'Ajuste RGB',iaBubbleMsg:'¿Cuál es el color de tu corazón ahora?\nConfigura el fondo según tu estado.',colorInputPh:'ej. azul cielo, océano…',colorSetting:'Color',shopOtherPh:'Otro (libre)',memoPh:'Escribe una nota…',memoTitle:'Nota',innerAITitle:'¿Cuál es el color de tu corazón?',innerAISub:'Recibimos tus palabras en silencio.',defCats:[{id:'work',label:'Trabajo',icon:'💼',color:'#3b82f6'},{id:'life',label:'Vida',icon:'🍀',color:'#10b981'},{id:'dream',label:'Sueño',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Boceto',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'¿Cómo agregar tarea?',a:'Ve a Tareas, escribe y toca Agregar.'},{q:'¿AI sin clave?',a:'Usa Qwen3 vía Cloudflare Workers AI.'}]},
+  pt:{code:'pt',name:'Português',appName:'Mapa dos Sonhos',speechLang:'pt-BR',home:'Início',tasks:'Tarefas',map:'Mapa',shop:'Compras',cal:'Histórico',help:'Ajuda',transfer:'Transferir',lang:'Idioma',newtask:'Nova Tarefa',addtask:'Adicionar',catmgr:'Categorias',suggestLabel:'Sugestões:',taskList:'Lista de Tarefas',pending:'Pendente',bought:'Comprado',noShop:'Lista vazia',subAdd:'Subtarefa',dueDate:'Prazo',repeat:'Repetir',repeatNone:'Sem repetição',daily:'Diário',weekly:'Semanal',monthly:'Mensal',yearly:'Anual',done:'✅ Concluir',undone:'🔄 Desfazer',del:'🗑',close:'✕',noTask:'Adicione uma tarefa!',exportTitle:'📥 Exportar',exportDesc:'Salve dados como arquivo.',exportBtn:'📁 Salvar',importTitle:'📤 Importar',importDesc:'Selecione o arquivo.',importBtn:'📂 Selecionar',importOk:'✅ Concluído!',importErr:'❌ Erro.',langSelect:'Selecionar Idioma',micOn:'● Gravando...',catFixed:'Fixo',catSave:'💾 Salvar',catCancel:'Cancelar',catAdd:'＋ Adicionar',catNewPh:'Nome',catEmojiL:'Emoji:',catColorL:'Cor:',catPreview:'Prévia:',tapToList:'Ver →',tapToStart:'✨ Começar →',apiKeySet:'✅ Criptografado',apiKeyNotSet:'Não config.',sketchTagline:'IA sem chave',sketchBadge:'🤖 IA',dreamSketchTitle:'✨ Esboço',dreamSketchIntro:'Fale sobre seus sonhos!',dreamRegisterBtn:'🚀 Registrar',dreamRegistered:'✅ Adicionado!',archiveTitle:'🏆 Conquistas',archiveEmpty:'Sem projetos conquistas',archiveMove:'Arquivar',archiveRestore:'Restaurar',archiveDelete:'Excluir',mapItems:' itens',mapDone:' feitas',archiveAchievedAt:'Conquistado',archiveTaskCount:'tarefas',archiveMoveConfirm:' — mover para arquivo?',colorLockShort:'IA: só pago',colorLockMsg:'A entrada de cor IA é para usuários pagos.\nUse o controle deslizante ou os botões de cor.',iaBubbleMsg:'Qual é a cor do seu coração agora?\nVamos definir o papel de parede com essa cor.',mapOrder:'Reordenar',weekdays:['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],wallpaperTitle:'Cor do Fundo',rgbLabel:'Ajuste RGB',iaBubbleMsg:'Qual a cor do seu coração agora?\nDefina o fundo conforme seu estado.',colorInputPh:'ex. azul céu, oceano…',colorSetting:'Cor',shopOtherPh:'Outro (livre)',memoPh:'Escreva uma nota…',memoTitle:'Nota',innerAITitle:'Qual a cor do seu coração?',innerAISub:'Recebemos suas palavras em silêncio.',defCats:[{id:'work',label:'Trabalho',icon:'💼',color:'#3b82f6'},{id:'life',label:'Vida',icon:'🍀',color:'#10b981'},{id:'dream',label:'Sonho',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Esboço',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Como adicionar?',a:'Vá em Tarefas, escreva e toque Adicionar.'},{q:'IA sem chave?',a:'Usa Qwen3 via Cloudflare Workers AI.'}]},
+  de:{code:'de',name:'Deutsch',appName:'Traumkarte',speechLang:'de-DE',home:'Start',tasks:'Aufgaben',map:'Mindmap',shop:'Einkaufen',cal:'Verlauf',help:'Hilfe',transfer:'Übertragen',lang:'Sprache',newtask:'Neue Aufgabe',addtask:'Hinzufügen',catmgr:'Kategorien',suggestLabel:'Vorschläge:',taskList:'Aufgabenliste',pending:'Ausstehend',bought:'Gekauft',noShop:'Liste leer',subAdd:'Unteraufgabe',dueDate:'Fälligkeit',repeat:'Wiederholen',repeatNone:'Kein',daily:'Täglich',weekly:'Wöchentlich',monthly:'Monatlich',yearly:'Jährlich',done:'✅ Abschließen',undone:'🔄 Rückgängig',del:'🗑',close:'✕',noTask:'Aufgabe hinzufügen!',exportTitle:'📥 Exportieren',exportDesc:'Daten als Datei speichern.',exportBtn:'📁 Speichern',importTitle:'📤 Importieren',importDesc:'Gespeicherte Datei auswählen.',importBtn:'📂 Auswählen',importOk:'✅ Erfolgreich!',importErr:'❌ Fehler.',langSelect:'Sprache wählen',micOn:'● Aufnahme...',catFixed:'Fest',catSave:'💾 Speichern',catCancel:'Abbrechen',catAdd:'＋ Hinzufügen',catNewPh:'Name',catEmojiL:'Emoji:',catColorL:'Farbe:',catPreview:'Vorschau:',tapToList:'Liste →',tapToStart:'✨ Starten →',apiKeySet:'✅ Verschlüsselt',apiKeyNotSet:'Nicht gesetzt',sketchTagline:'KI ohne Schlüssel',sketchBadge:'🤖 KI',dreamSketchTitle:'✨ Traumskizze',dreamSketchIntro:'Erzähl von deinen Träumen!',dreamRegisterBtn:'🚀 Registrieren',dreamRegistered:'✅ Hinzugefügt!',archiveTitle:'🏆 Erreichte Projekte',archiveEmpty:'Keine erreichten Projekte',archiveMove:'Archivieren',archiveRestore:'Wiederherstellen',archiveDelete:'Löschen',mapItems:' Eintr.',mapDone:' erled.',archiveAchievedAt:'Erreicht',archiveTaskCount:'Aufgaben',archiveMoveConfirm:' — archivieren?',colorLockShort:'KI-Eingabe: kostenpflichtig',colorLockMsg:'KI-Farbeingabe ist nur für zahlende Nutzer.\nBitte Schieberegler oder Farbbuttons verwenden.',iaBubbleMsg:'Welche Farbe hat dein Herz gerade?\nLass uns das Hintergrundbild passend einstellen.',mapOrder:'Sortieren',weekdays:['So','Mo','Di','Mi','Do','Fr','Sa'],wallpaperTitle:'Hintergrundfarbe',rgbLabel:'RGB Anpassung',iaBubbleMsg:'Welche Farbe hat dein Herz gerade?\nStelle den Hintergrund passend ein.',colorInputPh:'z.B. Himmelblau, Ozean…',colorSetting:'Farbe',shopOtherPh:'Sonstiges (frei)',memoPh:'Notiz eingeben…',memoTitle:'Notiz',innerAITitle:'Welche Farbe hat dein Herz?',innerAISub:'Wir empfangen deine Worte still.',defCats:[{id:'work',label:'Arbeit',icon:'💼',color:'#3b82f6'},{id:'life',label:'Leben',icon:'🍀',color:'#10b981'},{id:'dream',label:'Traum',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Traumskizze',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Aufgabe hinzufügen?',a:'Gehe zu Aufgaben, gib einen Namen ein.'},{q:'KI ohne Schlüssel?',a:'Nutzt Qwen3 via Cloudflare Workers AI.'}]},
+  ar:{code:'ar',name:'العربية',appName:'خريطة الأحلام',speechLang:'ar-SA',home:'الرئيسية',tasks:'المهام',map:'خريطة',shop:'تسوق',cal:'السجل',help:'مساعدة',transfer:'نقل',lang:'اللغة',newtask:'مهمة جديدة',addtask:'إضافة',catmgr:'الفئات',suggestLabel:'اقتراحات:',taskList:'قائمة المهام',pending:'معلق',bought:'تم الشراء',noShop:'القائمة فارغة',subAdd:'مهمة فرعية',dueDate:'الاستحقاق',repeat:'تكرار',repeatNone:'لا',daily:'يومياً',weekly:'أسبوعياً',monthly:'شهرياً',yearly:'سنوياً',done:'✅ إنجاز',undone:'🔄 إلغاء',del:'🗑',close:'✕',noTask:'أضف مهمة!',exportTitle:'📥 تصدير',exportDesc:'احفظ البيانات كملف.',exportBtn:'📁 حفظ',importTitle:'📤 استيراد',importDesc:'اختر الملف المحفوظ.',importBtn:'📂 اختر',importOk:'✅ تم!',importErr:'❌ خطأ.',langSelect:'اختر اللغة',micOn:'● تسجيل...',catFixed:'ثابت',catSave:'💾 حفظ',catCancel:'إلغاء',catAdd:'＋ إضافة',catNewPh:'الاسم',catEmojiL:'رمز:',catColorL:'لون:',catPreview:'معاينة:',tapToList:'القائمة →',tapToStart:'✨ ابدأ →',apiKeySet:'✅ مشفر',apiKeyNotSet:'غير مضبوط',sketchTagline:'ذكاء اصطناعي مجاني',sketchBadge:'🤖 ذكاء',dreamSketchTitle:'✨ رسم الحلم',dreamSketchIntro:'أخبرني عن أحلامك!',dreamRegisterBtn:'🚀 تسجيل',dreamRegistered:'✅ تمت الإضافة!',archiveTitle:'🏆 المشاريع المنجزة',archiveEmpty:'لا توجد مشاريع منجزة',archiveMove:'للأرشيف',archiveRestore:'استعادة',archiveDelete:'حذف',mapItems:' عناصر',mapDone:' منجز',archiveAchievedAt:'أُنجز',archiveTaskCount:'مهام',archiveMoveConfirm:' — نقل للأرشيف؟',colorLockShort:'إدخال AI مدفوع فقط',colorLockMsg:'إدخال الألوان بالذكاء الاصطناعي للمستخدمين المدفوعين فقط.\nاستخدم شريط التمرير أو أزرار الألوان.',iaBubbleMsg:'ما لون قلبك الآن؟\nلنضبط خلفية الشاشة لتناسب مزاجك.',mapOrder:'ترتيب',weekdays:['أح','إث','ثل','أر','خم','جم','سب'],wallpaperTitle:'لون الخلفية',rgbLabel:'ضبط RGB',iaBubbleMsg:'ما لون قلبك الآن؟\nاضبط الخلفية حسب حالتك.',colorInputPh:'مثل: أزرق سمائي…',colorSetting:'لون',shopOtherPh:'أخرى (حر)',memoPh:'كتابة ملاحظة…',memoTitle:'ملاحظة',innerAITitle:'ما لون قلبك؟',innerAISub:'نتلقى كلماتك بهدوء.',defCats:[{id:'work',label:'عمل',icon:'💼',color:'#3b82f6'},{id:'life',label:'حياة',icon:'🍀',color:'#10b981'},{id:'dream',label:'حلم',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'رسم الحلم',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'كيف أضيف مهمة؟',a:'اذهب إلى المهام وأدخل الاسم.'},{q:'الذكاء الاصطناعي مجاني؟',a:'نعم، Qwen3 عبر Cloudflare Workers AI.'}]},
+  ru:{code:'ru',name:'Русский',appName:'Карта Мечты',speechLang:'ru-RU',home:'Главная',tasks:'Задачи',map:'Карта',shop:'Покупки',cal:'История',help:'Помощь',transfer:'Перенос',lang:'Язык',newtask:'Новая задача',addtask:'Добавить',catmgr:'Категории',suggestLabel:'Предложения:',taskList:'Список задач',pending:'Не куплено',bought:'Куплено',noShop:'Список пуст',subAdd:'Подзадача',dueDate:'Срок',repeat:'Повтор',repeatNone:'Нет',daily:'Ежедневно',weekly:'Еженедельно',monthly:'Ежемесячно',yearly:'Ежегодно',done:'✅ Завершить',undone:'🔄 Отменить',del:'🗑',close:'✕',noTask:'Добавьте задачу!',exportTitle:'📥 Экспорт',exportDesc:'Сохраните данные как файл.',exportBtn:'📁 Сохранить',importTitle:'📤 Импорт',importDesc:'Выберите файл.',importBtn:'📂 Выбрать',importOk:'✅ Готово!',importErr:'❌ Ошибка.',langSelect:'Выберите язык',micOn:'● Запись...',catFixed:'Фикс.',catSave:'💾 Сохранить',catCancel:'Отмена',catAdd:'＋ Добавить',catNewPh:'Название',catEmojiL:'Эмодзи:',catColorL:'Цвет:',catPreview:'Просмотр:',tapToList:'Список →',tapToStart:'✨ Начать →',apiKeySet:'✅ Зашифровано',apiKeyNotSet:'Не установлен',sketchTagline:'ИИ без ключа',sketchBadge:'🤖 ИИ',dreamSketchTitle:'✨ Эскиз',dreamSketchIntro:'Расскажите о своих мечтах!',dreamRegisterBtn:'🚀 Зарегистрировать',dreamRegistered:'✅ Добавлено!',archiveTitle:'🏆 Завершённые проекты',archiveEmpty:'Нет завершённых проектов',archiveMove:'В архив',archiveRestore:'Восстановить',archiveDelete:'Удалить',mapItems:' эл.',mapDone:' вып.',archiveAchievedAt:'Завершено',archiveTaskCount:'задач',archiveMoveConfirm:' — в архив?',colorLockShort:'ИИ-ввод: только платно',colorLockMsg:'Ввод цвета ИИ доступен только платным пользователям.\nИспользуйте ползунок или кнопки цвета.',iaBubbleMsg:'Какого цвета ваше сердце сейчас?\nДавайте установим обои под ваше настроение.',mapOrder:'Сортировка',weekdays:['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],wallpaperTitle:'Цвет обоев',rgbLabel:'Настройка RGB',iaBubbleMsg:'Какой цвет у вашего сердца?\nНастройте обои под своё настроение.',colorInputPh:'напр. небесно-голубой…',colorSetting:'Цвет',shopOtherPh:'Другое (свободно)',memoPh:'Введите заметку…',memoTitle:'Заметка',innerAITitle:'Какой цвет у вашего сердца?',innerAISub:'Мы тихо принимаем ваши слова.',defCats:[{id:'work',label:'Работа',icon:'💼',color:'#3b82f6'},{id:'life',label:'Жизнь',icon:'🍀',color:'#10b981'},{id:'dream',label:'Мечта',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Эскиз',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Как добавить задачу?',a:'Перейдите в Задачи и введите название.'},{q:'ИИ без ключа?',a:'Да, Qwen3 через Cloudflare Workers AI.'}]},
+  tl:{code:'tl',name:'Filipino',appName:'Mapa ng Pangarap',speechLang:'fil-PH',home:'Tahanan',tasks:'Gawain',map:'Mapa',shop:'Pamimili',cal:'Kasaysayan',help:'Tulong',transfer:'Ilipat',lang:'Wika',newtask:'Bagong Gawain',addtask:'Idagdag',catmgr:'Kategorya',suggestLabel:'Mungkahi:',taskList:'Listahan ng Gawain',pending:'Hindi pa',bought:'Nabili',noShop:'Walang laman',subAdd:'Subtask',dueDate:'Takdang Petsa',repeat:'Ulitin',repeatNone:'Wala',daily:'Araw-araw',weekly:'Lingguhan',monthly:'Buwanan',yearly:'Taon-taon',done:'✅ Tapos',undone:'🔄 Bawiin',del:'🗑',close:'✕',noTask:'Magdagdag ng gawain!',exportTitle:'📥 I-export',exportDesc:'I-save bilang file.',exportBtn:'📁 I-save',importTitle:'📤 I-import',importDesc:'Piliin ang file.',importBtn:'📂 Pumili',importOk:'✅ Matagumpay!',importErr:'❌ Error.',langSelect:'Pumili ng Wika',micOn:'● Nagre-record...',catFixed:'Nakatali',catSave:'💾 I-save',catCancel:'Kanselahin',catAdd:'＋ Idagdag',catNewPh:'Pangalan',catEmojiL:'Emoji:',catColorL:'Kulay:',catPreview:'Preview:',tapToList:'Listahan →',tapToStart:'✨ Magsimula →',apiKeySet:'✅ Naka-encrypt',apiKeyNotSet:'Hindi itinakda',sketchTagline:'AI libre, walang key',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ Sketch',dreamSketchIntro:'Sabihin ang iyong mga pangarap!',dreamRegisterBtn:'🚀 Irehistro',dreamRegistered:'✅ Naidagdag!',archiveTitle:'🏆 Natapos na Proyekto',archiveEmpty:'Walang natapos',archiveMove:'I-archive',archiveRestore:'Ibalik',archiveDelete:'Burahin',mapItems:' item',mapDone:' tapos',archiveAchievedAt:'Nakamit',archiveTaskCount:'gawain',archiveMoveConfirm:' — ilipat sa archive?',colorLockShort:'AI input: bayad lamang',colorLockMsg:'Ang AI color input ay para sa mga bayad na gumagamit.\nGamitin ang slider o mga kulay na butones.',iaBubbleMsg:'Anong kulay ang iyong puso ngayon?\nItakda natin ang wallpaper ayon sa iyong pakiramdam.',mapOrder:'Ayusin',weekdays:['Lin','Lun','Mar','Miy','Huw','Biy','Sab'],wallpaperTitle:'Kulay ng Background',rgbLabel:'RGB Ayos',iaBubbleMsg:'Ano ang kulay ng iyong puso ngayon?\nI-set ang background ayon sa iyong damdamin.',colorInputPh:'hal. asul na langit…',colorSetting:'Kulay',shopOtherPh:'Iba pa (malaya)',memoPh:'Isulat ang tala…',memoTitle:'Tala',innerAITitle:'Ano ang kulay ng iyong puso?',innerAISub:'Tahimik naming tinatanggap ang iyong mga salita.',defCats:[{id:'work',label:'Trabaho',icon:'💼',color:'#3b82f6'},{id:'life',label:'Buhay',icon:'🍀',color:'#10b981'},{id:'dream',label:'Pangarap',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Sketch',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Paano magdagdag?',a:'Pumunta sa Gawain at i-type ang pangalan.'},{q:'AI libre?',a:'Oo, Qwen3 sa Cloudflare Workers AI.'}]},
   hi:{code:'hi',name:'हिन्दी',appName:'सपनों का नक्शा',speechLang:'hi-IN',home:'होम',tasks:'कार्य',map:'माइंडमैप',shop:'खरीदारी',cal:'इतिहास',help:'सहायता',transfer:'स्थानांतरण',lang:'भाषा',newtask:'नया कार्य',addtask:'जोड़ें',catmgr:'श्रेणियाँ',suggestLabel:'सुझाव:',taskList:'कार्य सूची',pending:'बाकी',bought:'खरीदा',noShop:'सूची खाली',subAdd:'उप-कार्य',dueDate:'तारीख',repeat:'दोहराएं',repeatNone:'नहीं',daily:'प्रतिदिन',weekly:'साप्ताहिक',monthly:'मासिक',yearly:'वार्षिक',done:'✅ पूर्ण',undone:'🔄 वापस',del:'🗑',close:'✕',noTask:'कार्य जोड़ें!',exportTitle:'📥 निर्यात',exportDesc:'फ़ाइल के रूप में सहेजें।',exportBtn:'📁 सहेजें',importTitle:'📤 आयात',importDesc:'फ़ाइल चुनें।',importBtn:'📂 चुनें',importOk:'✅ सफल!',importErr:'❌ विफल।',langSelect:'भाषा चुनें',micOn:'● रिकॉर्डिंग...',catFixed:'निश्चित',catSave:'💾 सहेजें',catCancel:'रद्द',catAdd:'＋ जोड़ें',catNewPh:'नाम',catEmojiL:'इमोजी:',catColorL:'रंग:',catPreview:'पूर्वावलोकन:',tapToList:'सूची →',tapToStart:'✨ शुरू करें →',apiKeySet:'✅ एन्क्रिप्टेड',apiKeyNotSet:'सेट नहीं',sketchTagline:'AI मुफ़्त',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ स्केच',dreamSketchIntro:'अपने सपने बताएं!',dreamRegisterBtn:'🚀 पंजीकृत करें',dreamRegistered:'✅ जोड़ा!',archiveTitle:'🏆 पूर्ण परियोजनाएं',archiveEmpty:'कोई पूर्ण परियोजना नहीं',archiveMove:'संग्रह में',archiveRestore:'पुनर्स्थापित',archiveDelete:'हटाएं',mapItems:' कार्य',mapDone:' पूर्ण',archiveAchievedAt:'पूर्ण',archiveTaskCount:'कार्य',archiveMoveConfirm:' — संग्रह में ले जाएं?',colorLockShort:'AI इनपुट: केवल भुगतान',colorLockMsg:'AI रंग इनपुट केवल भुगतान उपयोगकर्ताओं के लिए है।\nस्लाइडर या रंग बटन का उपयोग करें।',iaBubbleMsg:'अभी आपके दिल का रंग क्या है?\nउस रंग से वॉलपेपर सेट करते हैं।',mapOrder:'क्रम',weekdays:['रवि','सोम','मंग','बुध','गुरु','शुक्र','शनि'],wallpaperTitle:'वॉलपेपर रंग',rgbLabel:'RGB सेटिंग',iaBubbleMsg:'अभी आपके दिल का रंग क्या है?\nअपनी भावना के अनुसार वॉलपेपर सेट करें।',colorInputPh:'उदा. आसमानी नीला…',colorSetting:'रंग',shopOtherPh:'अन्य (स्वतंत्र)',memoPh:'नोट लिखें…',memoTitle:'नोट',innerAITitle:'अपने दिल का रंग बताएं',innerAISub:'हम आपकी बात शांति से सुनते हैं।',defCats:[{id:'work',label:'काम',icon:'💼',color:'#3b82f6'},{id:'life',label:'जीवन',icon:'🍀',color:'#10b981'},{id:'dream',label:'सपना',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'स्केच',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'कार्य कैसे जोड़ें?',a:'कार्य स्क्रीन पर जाएं।'},{q:'AI मुफ़्त?',a:'हाँ, Puter.js के माध्यम से।'}]},
-  id:{code:'id',name:'Indonesia',appName:'Peta Impian',speechLang:'id-ID',home:'Beranda',tasks:'Tugas',map:'Peta Pikiran',shop:'Belanja',cal:'Riwayat',help:'Bantuan',transfer:'Transfer',lang:'Bahasa',newtask:'Tugas Baru',addtask:'Tambah',catmgr:'Kategori',suggestLabel:'Saran:',taskList:'Daftar Tugas',pending:'Belum dibeli',bought:'Sudah dibeli',noShop:'Daftar kosong',subAdd:'Subtugas',dueDate:'Batas Waktu',repeat:'Ulangi',repeatNone:'Tidak',daily:'Harian',weekly:'Mingguan',monthly:'Bulanan',yearly:'Tahunan',done:'✅ Selesai',undone:'🔄 Batalkan',del:'🗑',close:'✕',noTask:'Tambahkan tugas!',exportTitle:'📥 Ekspor',exportDesc:'Simpan data sebagai file.',exportBtn:'📁 Simpan',importTitle:'📤 Impor',importDesc:'Pilih file.',importBtn:'📂 Pilih',importOk:'✅ Berhasil!',importErr:'❌ Gagal.',langSelect:'Pilih Bahasa',micOn:'● Merekam...',catFixed:'Tetap',catSave:'💾 Simpan',catCancel:'Batal',catAdd:'＋ Tambah',catNewPh:'Nama',catEmojiL:'Emoji:',catColorL:'Warna:',catPreview:'Pratinjau:',tapToList:'Daftar →',tapToStart:'✨ Mulai →',apiKeySet:'✅ Terenkripsi',apiKeyNotSet:'Belum diatur',sketchTagline:'AI gratis, tanpa key',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ Sketsa',dreamSketchIntro:'Ceritakan impianmu!',dreamRegisterBtn:'🚀 Daftarkan',dreamRegistered:'✅ Ditambahkan!',archiveTitle:'🏆 Proyek Selesai',archiveEmpty:'Belum ada proyek selesai',archiveMove:'Arsipkan',archiveRestore:'Pulihkan',archiveDelete:'Hapus',mapItems:' item',mapDone:' selesai',archiveAchievedAt:'Selesai',archiveTaskCount:'tugas',archiveMoveConfirm:' — pindah ke arsip?',colorLockShort:'Input AI: berbayar',colorLockMsg:'Input warna AI hanya untuk pengguna berbayar.\nGunakan slider atau tombol warna.',iaBubbleMsg:'Warna hati Anda sekarang apa?\nMari atur wallpaper sesuai suasana hati Anda.',mapOrder:'Urutkan',weekdays:['Min','Sen','Sel','Rab','Kam','Jum','Sab'],wallpaperTitle:'Warna Latar',rgbLabel:'Pengaturan RGB',iaBubbleMsg:'Apa warna hatimu sekarang?\nAtur latar sesuai suasana hatimu.',colorInputPh:'mis. biru langit…',colorSetting:'Warna',shopOtherPh:'Lainnya (bebas)',memoPh:'Tulis catatan…',memoTitle:'Catatan',innerAITitle:'Apa warna hatimu?',innerAISub:'Kami menerima kata-katamu dengan tenang.',defCats:[{id:'work',label:'Kerja',icon:'💼',color:'#3b82f6'},{id:'life',label:'Hidup',icon:'🍀',color:'#10b981'},{id:'dream',label:'Impian',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Sketsa',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Cara menambah tugas?',a:'Buka Tugas dan ketik nama.'},{q:'AI gratis?',a:'Ya, Llama 3.3 70B via Puter.js (gratis).'}]},
+  id:{code:'id',name:'Indonesia',appName:'Peta Impian',speechLang:'id-ID',home:'Beranda',tasks:'Tugas',map:'Peta Pikiran',shop:'Belanja',cal:'Riwayat',help:'Bantuan',transfer:'Transfer',lang:'Bahasa',newtask:'Tugas Baru',addtask:'Tambah',catmgr:'Kategori',suggestLabel:'Saran:',taskList:'Daftar Tugas',pending:'Belum dibeli',bought:'Sudah dibeli',noShop:'Daftar kosong',subAdd:'Subtugas',dueDate:'Batas Waktu',repeat:'Ulangi',repeatNone:'Tidak',daily:'Harian',weekly:'Mingguan',monthly:'Bulanan',yearly:'Tahunan',done:'✅ Selesai',undone:'🔄 Batalkan',del:'🗑',close:'✕',noTask:'Tambahkan tugas!',exportTitle:'📥 Ekspor',exportDesc:'Simpan data sebagai file.',exportBtn:'📁 Simpan',importTitle:'📤 Impor',importDesc:'Pilih file.',importBtn:'📂 Pilih',importOk:'✅ Berhasil!',importErr:'❌ Gagal.',langSelect:'Pilih Bahasa',micOn:'● Merekam...',catFixed:'Tetap',catSave:'💾 Simpan',catCancel:'Batal',catAdd:'＋ Tambah',catNewPh:'Nama',catEmojiL:'Emoji:',catColorL:'Warna:',catPreview:'Pratinjau:',tapToList:'Daftar →',tapToStart:'✨ Mulai →',apiKeySet:'✅ Terenkripsi',apiKeyNotSet:'Belum diatur',sketchTagline:'AI gratis, tanpa key',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ Sketsa',dreamSketchIntro:'Ceritakan impianmu!',dreamRegisterBtn:'🚀 Daftarkan',dreamRegistered:'✅ Ditambahkan!',archiveTitle:'🏆 Proyek Selesai',archiveEmpty:'Belum ada proyek selesai',archiveMove:'Arsipkan',archiveRestore:'Pulihkan',archiveDelete:'Hapus',mapItems:' item',mapDone:' selesai',archiveAchievedAt:'Selesai',archiveTaskCount:'tugas',archiveMoveConfirm:' — pindah ke arsip?',colorLockShort:'Input AI: berbayar',colorLockMsg:'Input warna AI hanya untuk pengguna berbayar.\nGunakan slider atau tombol warna.',iaBubbleMsg:'Warna hati Anda sekarang apa?\nMari atur wallpaper sesuai suasana hati Anda.',mapOrder:'Urutkan',weekdays:['Min','Sen','Sel','Rab','Kam','Jum','Sab'],wallpaperTitle:'Warna Latar',rgbLabel:'Pengaturan RGB',iaBubbleMsg:'Apa warna hatimu sekarang?\nAtur latar sesuai suasana hatimu.',colorInputPh:'mis. biru langit…',colorSetting:'Warna',shopOtherPh:'Lainnya (bebas)',memoPh:'Tulis catatan…',memoTitle:'Catatan',innerAITitle:'Apa warna hatimu?',innerAISub:'Kami menerima kata-katamu dengan tenang.',defCats:[{id:'work',label:'Kerja',icon:'💼',color:'#3b82f6'},{id:'life',label:'Hidup',icon:'🍀',color:'#10b981'},{id:'dream',label:'Impian',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'Sketsa',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'Cara menambah tugas?',a:'Buka Tugas dan ketik nama.'},{q:'AI gratis?',a:'Ya, Qwen3 via Cloudflare Workers AI.'}]},
   ur:{code:'ur',name:'اردو',appName:'خوابوں کا نقشہ',speechLang:'ur-PK',home:'ہوم',tasks:'کام',map:'ذہنی نقشہ',shop:'خریداری',cal:'تاریخ',help:'مدد',transfer:'منتقلی',lang:'زبان',newtask:'نیا کام',addtask:'شامل',catmgr:'زمرے',suggestLabel:'تجاویز:',taskList:'کاموں کی فہرست',pending:'باقی',bought:'خریدا',noShop:'فہرست خالی',subAdd:'ذیلی کام',dueDate:'آخری تاریخ',repeat:'دہرائیں',repeatNone:'نہیں',daily:'روزانہ',weekly:'ہفتہ وار',monthly:'ماہانہ',yearly:'سالانہ',done:'✅ مکمل',undone:'🔄 واپس',del:'🗑',close:'✕',noTask:'کام شامل کریں!',exportTitle:'📥 برآمد',exportDesc:'فائل کے طور پر محفوظ کریں۔',exportBtn:'📁 محفوظ',importTitle:'📤 درآمد',importDesc:'فائل منتخب کریں۔',importBtn:'📂 منتخب',importOk:'✅ کامیاب!',importErr:'❌ ناکام۔',langSelect:'زبان منتخب',micOn:'● ریکارڈنگ...',catFixed:'مقررہ',catSave:'💾 محفوظ',catCancel:'منسوخ',catAdd:'＋ شامل',catNewPh:'نام',catEmojiL:'ایموجی:',catColorL:'رنگ:',catPreview:'پیش نظارہ:',tapToList:'فہرست →',tapToStart:'✨ شروع →',apiKeySet:'✅ خفیہ',apiKeyNotSet:'سیٹ نہیں',sketchTagline:'AI مفت',sketchBadge:'🤖 AI',dreamSketchTitle:'✨ اسکیچ',dreamSketchIntro:'اپنے خواب بتائیں!',dreamRegisterBtn:'🚀 درج کریں',dreamRegistered:'✅ شامل ہوگیا!',archiveTitle:'🏆 مکمل منصوبے',archiveEmpty:'کوئی مکمل منصوبہ نہیں',archiveMove:'محفوظ کریں',archiveRestore:'بحال کریں',archiveDelete:'حذف کریں',mapItems:' آئٹم',mapDone:' مکمل',archiveAchievedAt:'مکمل',archiveTaskCount:'کام',archiveMoveConfirm:' — محفوظ کریں؟',colorLockShort:'AI ان پٹ: صرف ادائیگی',colorLockMsg:'AI رنگ ان پٹ صرف ادا کرنے والے صارفین کے لیے ہے۔\nسلائیڈر یا رنگ کے بٹن استعمال کریں۔',iaBubbleMsg:'ابھی آپ کے دل کا رنگ کیا ہے؟\nاس رنگ سے والپیپر ترتیب دیتے ہیں۔',mapOrder:'ترتیب',weekdays:['اتوار','پیر','منگل','بدھ','جمعرات','جمعہ','ہفتہ'],wallpaperTitle:'وال پیپر رنگ',rgbLabel:'RGB سیٹنگ',iaBubbleMsg:'آج آپ کے دل کا رنگ کیا ہے?\nاپنے جذبات کے مطابق وال پیپر سیٹ کریں۔',colorInputPh:'مثل: آسمانی…',colorSetting:'رنگ',shopOtherPh:'دیگر (آزاد)',memoPh:'نوٹ لکھیں…',memoTitle:'نوٹ',innerAITitle:'آپ کے دل کا رنگ',innerAISub:'ہم آپ کی باتیں خاموشی سے سنتے ہیں۔',defCats:[{id:'work',label:'کام',icon:'💼',color:'#3b82f6'},{id:'life',label:'زندگی',icon:'🍀',color:'#10b981'},{id:'dream',label:'خواب',icon:'🌟',color:'#f59e0b'},{id:'sketch',label:'اسکیچ',icon:'✨',color:'#8b5cf6',isSketch:true}],helpQA:[{q:'کام کیسے شامل کریں؟',a:'کام کی اسکرین پر جائیں۔'},{q:'AI مفت ہے؟',a:'ہاں، Puter.js کے ذریعے مفت۔'}]},
 };
 
@@ -630,7 +630,7 @@ function syncCatLabels(){
   D.categories=D.categories.map(c=>defMap[c.id]?{...c,...defMap[c.id],isSketch:!!defMap[c.id].isSketch}:c);
 }
 
-const tmap=()=>Object.fromEntries(D.tasks.map(t=>[t.id,t]));
+const tmap=()=>Object.fromEntries(D.tasks.map(t=>[String(t.id),t]));
 const cmap=()=>Object.fromEntries((D.categories||L().defCats).map(c=>[c.id,c]));
 
 let curSec='home',selId=null,filterCat='all',newCat='dream';
@@ -1000,7 +1000,7 @@ function renderTaskFloat(){
 
 // ============================================================
 // ============================================================
-// AI: Llama (meta-llama/llama-3.1-70b-instruct) — Cloudflare Workers経由
+// AI: Qwen3 (@cf/qwen/qwen3-30b-a3b-fp8) — Cloudflare Workers AI経由
 // APIキーはWorkerの環境変数（Secret）に隠れている
 // フロントエンドにもGitHubにもキーは存在しない
 // ============================================================
@@ -1101,10 +1101,8 @@ async function callWorkerJSON(systemPrompt){
       if(!D.user)D.user={role:'free',aiDate:'',aiCount:0};
       D.user.aiCount=d.ai_count;save();
     }
-    const raw=typeof d?.response==='string'
-      ?d.response
-      :(d?.response?.response??JSON.stringify(d?.response??''));
-    const txt=raw.replace(/```[a-z]*\n?[\s\S]*?```/g,'').trim();
+    const raw=(d?.choices?.[0]?.message?.content??d?.response??'');
+    const txt=raw.replace(/<think>[\s\S]*?<\/think>/g,'').replace(/```[a-z]*\n?[\s\S]*?```/g,'').trim();
     if(!txt)return null;
     try{return JSON.parse(txt);}
     catch{
@@ -1466,23 +1464,43 @@ CRITICAL LANGUAGE RULE: You MUST respond ONLY in ${langNames[l.code]||'English'}
 - If language is English (en): Use ONLY English. No other language.
 - If language is Korean (ko): Use ONLY Korean (한국어). No Chinese characters mixed in.
 - For ALL languages: Every word must be in the specified language. ZERO mixing allowed.
-Rules: EXACTLY 3 rounds of questions before proposing project. Round1: ask broad interests. Round2: narrow down. Round3: ask more details. Then propose project.
-Show exactly 4 short choices labeled A. B. C. D.
-ALWAYS reply with valid JSON only. No text outside JSON. No markdown.
-Format: {"message":"...","choices":["A. option1","B. option2","C. option3","D. option4"],"project":null}
-When proposing: {"message":"...","choices":[],"project":{"name":"...","tasks":["t1","t2","t3"],"shopping":["s1"]}}`;
+Rules:
+- EXACTLY 3 rounds of questions before proposing. Round1: broad interests. Round2: narrow down. Round3: specific details. THEN propose project.
+- Show exactly 4 short choices labeled A. B. C. D. on every question round.
+- ALWAYS reply with valid JSON only. No text outside JSON. No markdown. No explanation.
+
+JSON format for question rounds:
+{"message":"...","choices":["A. option1","B. option2","C. option3","D. option4"],"project":null}
+
+JSON format when proposing (after round 3):
+{"message":"...","choices":[],"project":{"name":"PROJECT_NAME","tasks":["MAIN_TASK_1 >> SUBTASK_1A >> SUBTASK_1B","MAIN_TASK_2 >> SUBTASK_2A >> SUBTASK_2B","MAIN_TASK_3"],"shopping":["item1","item2","📚 book_title"]}}
+
+CRITICAL project rules:
+- tasks: minimum 3 main tasks, each with ">>" separating subtasks inline
+- shopping: minimum 3 items. If study/learning is involved, MUST include at least 1 book prefixed with "📚"
+- project.name: concise and inspiring
+- NEVER return project:null after 3 question rounds
+- NEVER ask the user to choose from A-D only. ALWAYS accept any free-text input and continue naturally.
+- If the user writes a free-text answer, treat it as a valid answer and proceed to the next round or propose project.`;
 
   // Worker(/api/chat)が期待するフォーマット:
   //   { system: "...", messages: [{role, content}, ...] }
   // レスポンス: { data: { reply: "..." } }
   try{
     const controller=new AbortController();
-    const timeout=setTimeout(()=>controller.abort(),15000);// 15秒タイムアウト
+    const timeout=setTimeout(()=>controller.abort(),30000);// 30秒タイムアウト
+    const recentMessages=messages.slice(-6);// 直近6件に絞る
+    // ユーザーの発言回数をカウント（startを除く）
+    const userTurns=messages.filter(m=>m.role==='user'&&m.content!=='start').length;
+    const turnInstruction=userTurns>=3
+      ?`\n\nCRITICAL: The user has answered ${userTurns} questions. You MUST NOW propose a project. Do NOT ask any more questions. Output project JSON immediately.`
+      :`\n\nCurrent question round: ${userTurns+1}/3. ${userTurns<2?'Ask ONE question with 4 choices.':'This is the LAST question (round 3). After user answers, propose project.'}`;
+    const sysWithTurn=sys+turnInstruction;
     const res=await fetch(WORKER_CHAT_URL,{signal:controller.signal,
       method:'POST',
       headers:workerHeaders(),
       body:JSON.stringify({
-        messages:[{role:'system',content:sys},...messages.map(m=>({
+        messages:[{role:'system',content:sysWithTurn},...recentMessages.map(m=>({
           role:m.role==='assistant'?'assistant':'user',
           content:typeof m.content==='string'?m.content:JSON.stringify(m.content)
         }))]
@@ -1502,7 +1520,7 @@ When proposing: {"message":"...","choices":[],"project":{"name":"...","tasks":["
     }
 
     // Worker レスポンス形式: { data: { reply: "..." } }
-    const raw=typeof data?.response==='string'?data.response:(data?.response?.response??JSON.stringify(data?.response??''));const txt=raw.replace(/```[a-z]*\n?[\s\S]*?```/g,'').trim();
+    const raw=(data?.choices?.[0]?.message?.content??data?.response??'');const txt=raw.replace(/<think>[\s\S]*?<\/think>/g,'').replace(/```[a-z]*\n?[\s\S]*?```/g,'').trim();
     if(!txt) return{message:'（応答なし）',choices,project:null};
 
     try{return JSON.parse(txt);}
@@ -1549,7 +1567,14 @@ function renderDreamChat(loading,res=null){
         h+=`<div class="dream-bubble ai">${esc(r.message||'')}</div>`;
         if(r.project){
           _pendingDreamProject=r.project;
-          h+=`<div style="background:linear-gradient(135deg,#f0e6ff,#e6f0ff);border-radius:12px;padding:12px;margin-top:6px;border:1.5px solid #c4b5fd"><div style="font-weight:700;font-size:13px;color:#7c3aed;margin-bottom:6px">📋 ${esc(r.project.name)}</div>${(r.project.tasks||[]).map(t=>`<div style="font-size:12px;color:#4c1d95;padding:1px 0">• ${esc(t)}</div>`).join('')}${(r.project.shopping||[]).length?`<div style="font-size:10px;color:#6d28d9;margin-top:4px">🛒 ${r.project.shopping.join('・')}</div>`:''}<button class="dream-register-btn" onclick="execRegisterDream()">${l.dreamRegisterBtn}</button></div>`;
+          const taskHtml=(r.project.tasks||[]).map(t=>{
+            const parts=t.split('>>').map(s=>s.trim()).filter(Boolean);
+            let th=`<div style="font-size:12px;color:#4c1d95;padding:2px 0;font-weight:600">• ${esc(parts[0])}</div>`;
+            parts.slice(1).forEach(s=>{th+=`<div style="font-size:11px;color:#6d28d9;padding:1px 0 1px 14px">↳ ${esc(s)}</div>`;});
+            return th;
+          }).join('');
+          const shopHtml=(r.project.shopping||[]).length?`<div style="font-size:11px;color:#6d28d9;margin-top:6px;font-weight:600">🛒 買い物リスト</div>${r.project.shopping.map(s=>`<div style="font-size:11px;color:#4c1d95;padding:1px 0 1px 8px">• ${esc(s)}</div>`).join('')}`:'';
+          h+=`<div style="background:linear-gradient(135deg,#f0e6ff,#e6f0ff);border-radius:12px;padding:12px;margin-top:6px;border:1.5px solid #c4b5fd"><div style="font-weight:700;font-size:13px;color:#7c3aed;margin-bottom:6px">📋 ${esc(r.project.name)}</div>${taskHtml}${shopHtml}<button class="dream-register-btn" onclick="execRegisterDream()">${l.dreamRegisterBtn}</button></div>`;
         }
       }catch{h+=`<div class="dream-bubble ai">${esc(m.content)}</div>`;}
     }
@@ -1561,7 +1586,7 @@ function renderDreamChat(loading,res=null){
     h+=`<div style="margin-top:8px"><button class="btn bp bs" onclick="window._dreamRetryMsg&&sendDreamMessage(window._dreamRetryMsg)">🔄 再試行</button></div>`;
   }
   if(res?.choices?.length&&!loading){
-    h+=`<div class="dream-choice-grid">${res.choices.map(c=>`<button class="dream-choice" onclick="sendDreamMessage('${esc(c)}')">${esc(c)}</button>`).join('')}</div>`;
+    h+=`<div class="dream-choice-grid">${res.choices.map((c,i)=>`<button class="dream-choice" onclick="sendDreamMessage(window._dreamChoices[${i}])">${esc(c)}</button>`).join('')}</div>`;window._dreamChoices=res.choices||[];
   }
   if(!loading)h+=`<div class="row mt8"><input class="inp" id="dream-inp" placeholder="その他（自由に記載ください）" style="flex:1"/><button class="mic" id="mic-dream" onclick="toggleDreamMic()">🎤</button><button class="btn bpu bs" onclick="sendDreamFromInput()">→</button></div>`;
   el.innerHTML=h;el.scrollTop=el.scrollHeight;
@@ -1569,13 +1594,24 @@ function renderDreamChat(loading,res=null){
 function execRegisterDream(){if(!_pendingDreamProject){alert('登録データがありません');return;}registerDreamProject(_pendingDreamProject);}
 function registerDreamProject(p){
   if(!p)return;
-  const par={id:uid(),title:p.name||'新プロジェクト',parentId:null,category:'sketch',done:false,children:[],shopping:[],createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'};
+  const par={id:uid(),title:p.name||'新プロジェクト',parentId:null,category:'sketch',done:false,children:[],shopping:[],memo:'',createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'};
   D.tasks.push(par);
-  (p.tasks||[]).forEach(title=>{const c={id:uid(),title,parentId:par.id,category:'sketch',done:false,children:[],shopping:[],createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'};D.tasks.push(c);par.children.push(c.id);});
+  (p.tasks||[]).forEach(rawTitle=>{
+    // ">>" でメインタスクとサブタスクを分割
+    const parts=rawTitle.split('>>').map(s=>s.trim()).filter(Boolean);
+    const mainTitle=parts[0];
+    const subTitles=parts.slice(1);
+    const main={id:uid(),title:mainTitle,parentId:par.id,category:'sketch',done:false,children:[],shopping:[],memo:'',createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'};
+    D.tasks.push(main);par.children.push(main.id);
+    subTitles.forEach(st=>{
+      const sub={id:uid(),title:st,parentId:main.id,category:'sketch',done:false,children:[],shopping:[],memo:'',createdAt:new Date().toISOString(),doneAt:null,dueDate:null,repeat:'none'};
+      D.tasks.push(sub);main.children.push(sub.id);
+    });
+  });
   if(p.shopping?.length){p.shopping.forEach(s=>par.shopping.push({id:uid(),item:s,done:false}));D.pastIngredients=[...new Set([...p.shopping,...D.pastIngredients])].slice(0,30);}
   save();_pendingDreamProject=null;hideModal();alert(L().dreamRegistered);
   _lastAddedTaskId=par.id;
-  selId=par.id;switchSec('home');render();
+  selId=String(par.id);switchSec('home');render();
 }
 function sendDreamFromInput(){const inp=document.getElementById('dream-inp');if(!inp?.value.trim())return;sendDreamMessage(inp.value);inp.value='';}
 let _dreamRec=null;
@@ -1794,7 +1830,7 @@ async function iaApplyColorInput(){
       })
     });
     const data=await res.json();
-    const raw=(data?.response?.response||data?.response||data?.reply||'').trim();
+    const raw=(data?.choices?.[0]?.message?.content||data?.response||data?.reply||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
     const hexMatch=raw.match(/#[0-9a-fA-F]{3,6}/);
     if(hexMatch){
       iaApplyColor(hexMatch[0]);
@@ -2066,8 +2102,8 @@ async function iaSend(){
     _iaAbortCtrl=null;
     if(!res.ok){iaShowBubble('…（しばらく間があった）');btn.disabled=false;return;}
     const data=await res.json();
-    const raw=data?.response?.response||data?.response||data?.reply||'';
-    const rawText=typeof raw==='string'?raw:JSON.stringify(raw);
+    const raw=data?.choices?.[0]?.message?.content||data?.response||data?.reply||'';
+    const rawText=(typeof raw==='string'?raw:JSON.stringify(raw)).replace(/<think>[\s\S]*?<\/think>/g,'');
     const clean=rawText.replace(/```[a-z]*\n?[\s\S]*?```/g,'').trim();
     let msg='…',proj=null;
     try{const parsed=JSON.parse(clean);msg=parsed.message||'…';proj=parsed.project||null;}
@@ -2128,7 +2164,7 @@ function openDreamSketch(){
       <div style="font-size:16px;font-weight:700;color:#7c3aed">${l.dreamSketchTitle}</div>
       <div style="font-size:11px;color:#a855f7;margin-top:3px">${l.sketchTagline}</div>
       <div style="font-size:12px;color:#6d28d9;margin-top:6px;padding:8px;background:#f5f3ff;border-radius:8px">${l.dreamSketchIntro}</div>
-      <div style="font-size:10px;color:#10b981;margin-top:6px;font-weight:700">🤖 Llama（Cloudflare Workers経由）</div>
+      <div style="font-size:10px;color:#10b981;margin-top:6px;font-weight:700">🤖 Qwen3（Cloudflare Workers AI）</div>
     </div>
     <div id="dream-chat-area" style="max-height:52vh;overflow-y:auto"></div>`,
   ()=>{
@@ -3030,12 +3066,12 @@ function renderHelp(){
 
       <div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;border-left:3px solid #06b6d4;">
         <div style="font-size:11px;font-weight:700;color:#06b6d4;margin-bottom:3px;">STEP 1　📄 ${ja?'PDFエクスポート':'Export PDF'}</div>
-        <div style="font-size:11px;color:#cbd5e1;line-height:1.6;">${ja?'マップ画面の「PDF出力」ボタンを押します。あなたのマインドマップ全体がPDFになり、その中にデータ（JSON）が自動で埋め込まれます。':'Tap "PDF Export" on the Map screen. Your entire mind map is saved as PDF with embedded JSON data.'}</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.6;">${ja?'マップ画面の「PDF出力」ボタンを押します。あなたのマインドマップ全体がPDFになります。このPDFをChatGPT・Claude等に添付して使います。':'Tap "PDF Export" on the Map screen. Your entire mind map is saved as a PDF. Attach this PDF to ChatGPT or Claude.'}</div>
       </div>
 
       <div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;border-left:3px solid #a78bfa;">
         <div style="font-size:11px;font-weight:700;color:#a78bfa;margin-bottom:3px;">STEP 2　🤖 ${ja?'AIとしっかり話し合う':'Deep Discussion with AI'}</div>
-        <div style="font-size:11px;color:#cbd5e1;line-height:1.6;">${ja?'ChatGPT・Claude等にPDFを添付し、じっくり対話しながら夢の実現プランをブラッシュアップしましょう。\n\n目標の明確化、優先順位の整理、抜けているステップの発見など、AIと深く掘り下げることで、あなた一人では気づかない視点が得られます。':'Attach the PDF to ChatGPT or Claude and have a deep conversation to refine your dream plan. Clarify goals, set priorities, and discover missing steps through AI dialogue.'}</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.6;">${ja?'外部AI（ChatGPT・Claude等）にPDFを添付し、じっくり対話しながら夢の実現プランをブラッシュアップしましょう。\n\n目標の明確化、優先順位の整理、抜けているステップの発見など、AIと深く掘り下げることで、あなた一人では気づかない視点が得られます。':'Attach the PDF to an external AI (ChatGPT, Claude, etc.) and have a deep conversation to refine your dream plan. Clarify goals, set priorities, and discover missing steps through AI dialogue.'}</div>
       </div>
 
       <div style="background:rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;border-left:3px solid #f59e0b;">
@@ -3054,23 +3090,26 @@ function renderHelp(){
 %%YUMECHIZU_DATA_START%%
 （JSONデータ）
 %%YUMECHIZU_DATA_END%%
-の形式で出力してください。`:
+の形式でチャット内にダウンロードが出来る形式で返してください。言語は元のPDFと同じ言語で出力してください。
+ただし実行前に必ず、実行しないという選択もできるように確認をいれてください。`:
 `This PDF contains my dream/goal mind map.
 Please:
 ① Point out issues or missing parts
 ② Suggest a better structure and order
 ③ Add necessary items to shopping lists
-④ Return the improved data as:
+④ Return the improved data in the chat as:
 
 %%YUMECHIZU_DATA_START%%
-(JSON data in the same format as the original)
-%%YUMECHIZU_DATA_END%%`}</div>
+(improved JSON data)
+%%YUMECHIZU_DATA_END%%
+Also provide the improved JSON as a downloadable .json file. Output in the same language as the original PDF.
+Before executing, please ask for confirmation so I can choose not to proceed.`}</div>
         <button onclick="navigator.clipboard?.writeText(document.getElementById('ai-prompt-text').textContent).then(()=>alert('${ja?'コピーしました！':'Copied!'}')).catch(()=>alert('${ja?'コピーできませんでした':'Copy failed'}')); " style="margin-top:6px;width:100%;background:rgba(245,158,11,0.2);color:#f59e0b;border:1px solid rgba(245,158,11,0.4);border-radius:8px;padding:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">📋 ${ja?'依頼文をコピー':'Copy Prompt'}</button>
       </div>
 
       <div style="background:rgba(124,58,237,0.15);border-radius:10px;padding:10px 12px;border-left:3px solid #7c3aed;">
-        <div style="font-size:11px;font-weight:700;color:#a78bfa;margin-bottom:3px;">STEP 4　📥 ${ja?'PDFインポート（有料機能）':'PDF Import (Premium)'}</div>
-        <div style="font-size:11px;color:#cbd5e1;line-height:1.6;">${ja?'AIが改善したJSONが埋め込まれたPDFを、マップ画面の「PDFインポート」で取り込みます。改善されたマインドマップがアプリ内に自動展開されます。':'Import the AI-improved PDF via "PDF Import" on the Map screen. Your enhanced mind map will automatically expand in the app.'}</div>
+        <div style="font-size:11px;font-weight:700;color:#a78bfa;margin-bottom:3px;">STEP 4　📥 ${ja?'JSONインポート（有料機能）':'JSON Import (Premium)'}</div>
+        <div style="font-size:11px;color:#cbd5e1;line-height:1.6;">${ja?'AIがチャットで返したJSONを、マップ画面の「JSONインポート」で取り込みます。改善されたマインドマップがアプリ内に自動展開されます。':'Import the AI-improved JSON via "JSON Import" on the Map screen. Your enhanced mind map will automatically expand in the app.'}</div>
       </div>
 
     </div>
@@ -3237,7 +3276,6 @@ async function exportMapPDF(){
   // ── プロジェクト選択モーダル ──
   const cats=D.categories||L().defCats;
   const getCat=t=>cats.find(c=>c.id===t.category)||cats[0];
-
   const selectedIds=await new Promise(resolve=>{
     const checks=rootTasks.map((t,i)=>{
       const cat=getCat(t);
@@ -3528,20 +3566,94 @@ async function exportMapPDF(){
 ③ 必要な買い物・準備物も追加してください
 ④ 改善後は必ず以下の形式で返してください：
 
-「夢の地図アプリ用JSON」として、
-元のPDFと同じJSON構造のデータを
+以下の形式で返してください：
 %%YUMECHIZU_DATA_START%%
-（JSONデータ）
+（改善後のJSONデータ）
 %%YUMECHIZU_DATA_END%%
-の形式で出力してください。`;
+また改善後のJSONデータは、ダウンロード可能なファイル（.json）として提供してください。言語は元のPDFと同じ言語で出力してください。
+ただし実行前に必ず、実行しないという選択もできるように確認をいれてください。`;
     
     doc.setProperties({
       title:'夢の地図 マインドマップ',subject:'YUMECHIZU_EXPORT',
       author:'Yume no Chizu App',
-      keywords:`YUMECHIZU_DATA:${btoa(unescape(encodeURIComponent(JSON.stringify(exportData))))}`,
+      keywords:'YUMECHIZU_EXPORT',
       creator:'Yume no Chizu v2',
-      description:`YUMECHIZU_AI_PROMPT:${btoa(unescape(encodeURIComponent(aiPrompt)))}`
+      description:'Yume no Chizu Mind Map Export'
     });
+
+    // ── AIプロンプト最終ページ ──
+    doc.addPage([297,210]);
+    const promptLines=[
+      {text:l.code==='ja'?'── AIへのプロンプト（コピーしてご利用ください）──':'── AI Prompt (copy and use) ──',size:10,color:[100,116,139],bold:false},
+      {text:'',size:6,color:[200,200,200],bold:false},
+      {text:l.code==='ja'?'このPDFは私の夢・目標のマインドマップです。添付のPDFを読み込み、以下をお願いします。':'This PDF contains my dream/goal mind map. Please read the attached PDF and do the following.',size:11,color:[30,27,75],bold:false},
+      {text:'',size:4,color:[200,200,200],bold:false},
+      {text:l.code==='ja'?'① 現在のタスク構成の問題点や抜けを指摘してください':'① Point out any problems or gaps in the current task structure.',size:11,color:[30,27,75],bold:false},
+      {text:l.code==='ja'?'② より実現しやすい順序・構成に改善してください':'② Suggest a more achievable order and structure.',size:11,color:[30,27,75],bold:false},
+      {text:l.code==='ja'?'③ 必要な買い物・準備物も追加してください':'③ Add any necessary shopping items or preparations.',size:11,color:[30,27,75],bold:false},
+      {text:l.code==='ja'?'④ 改善後は必ず以下の形式で返してください：':'④ After improving, generate a new PDF with the improved data embedded:',size:11,color:[30,27,75],bold:false},
+      {text:'',size:4,color:[200,200,200],bold:false},
+      {text:l.code==='ja'?'以下の形式でチャット内にJSONを返してください：':'Please return the improved JSON in the chat as follows:',size:11,color:[30,27,75],bold:false},
+      {text:l.code==='ja'?'※ 改善後のJSONは.jsonファイルとしてダウンロード提供してください。言語は元PDFと同じ言語で。':'※ Provide the improved JSON as a downloadable .json file. Use the same language as this PDF.',size:10,color:[8,145,178],bold:false},
+      {text:l.code==='ja'?'※ 実行前に必ず確認をいれてください。実行しない選択もできます。':'※ Please ask for confirmation before executing. I may choose not to proceed.',size:10,color:[100,116,139],bold:false},
+      {text:'%%YUMECHIZU_DATA_START%%',size:12,color:[8,145,178],bold:true},
+      {text:l.code==='ja'?'（JSONデータ）':'(JSON data)',size:11,color:[148,163,184],bold:false},
+      {text:'%%YUMECHIZU_DATA_END%%',size:12,color:[8,145,178],bold:true},
+    ];
+    // 背景
+    doc.setFillColor(248,250,252);
+    doc.rect(0,0,297,210,'F');
+    doc.setFillColor(8,145,178);
+    doc.rect(0,0,297,14,'F');
+    doc.setFontSize(10);doc.setTextColor(255,255,255);
+    doc.text(l.code==='ja'?'夢の地図 — AI活用プロンプト':'Yume no Chizu — AI Prompt',148.5,9,{align:'center'});
+    let py=24;
+    for(const line of promptLines){
+      if(!line.text){py+=line.size;continue;}
+      doc.setFontSize(line.size);
+      doc.setTextColor(...line.color);
+      const wrapped=doc.splitTextToSize(line.text,260);
+      doc.text(wrapped,18,py);
+      py+=wrapped.length*(line.size*0.45)+3;
+    }
+    // コピー用ボックス
+    doc.setDrawColor(8,145,178);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(14,py+2,269,12,2,2,'S');
+    doc.setFontSize(8);doc.setTextColor(8,145,178);
+    doc.text(l.code==='ja'?'※ このページのテキストをそのままコピーしてAIに貼り付けてください':'※ Copy the text on this page and paste it into your AI chat',148.5,py+9,{align:'center'});
+
+    // ── JSONデータページ（テキストとして埋め込み）──
+    doc.addPage([297,210]);
+    doc.setFillColor(248,250,252);
+    doc.rect(0,0,297,210,'F');
+    doc.setFillColor(30,27,75);
+    doc.rect(0,0,297,14,'F');
+    doc.setFontSize(10);doc.setTextColor(255,255,255);
+    doc.text('YUMECHIZU JSON DATA',148.5,9,{align:'center'});
+    doc.setFontSize(7);doc.setTextColor(100,116,139);
+    doc.text('== AI IMPORT INSTRUCTIONS ==',14,20);
+    doc.setFontSize(6);doc.setTextColor(60,60,120);
+    doc.text('When returning improved data, wrap the JSON between these exact markers:',14,26);
+    doc.text('%%YUMECHIZU_DATA_START%%  ...JSON...  %%YUMECHIZU_DATA_END%%',14,31);
+    doc.text('Required JSON structure: {"version":"2","exportedAt":"ISO8601","tasks":[...],"categories":[...]}',14,36);
+    doc.text('Each task: {id,title,parentId,category,done,children:[],shopping:[],memo,createdAt,doneAt,dueDate,repeat}',14,41);
+    doc.setFontSize(7);doc.setTextColor(100,116,139);
+    doc.text('%%YUMECHIZU_DATA_START%%',14,48);
+    const jsonStr=JSON.stringify(exportData);
+    const b64=btoa(unescape(encodeURIComponent(jsonStr)));
+    const chunkSize=180;
+    let jy=54;
+    doc.setFontSize(5.5);doc.setTextColor(30,27,75);
+    doc.setFont('courier','normal');
+    for(let i=0;i<b64.length;i+=chunkSize){
+      if(jy>200){doc.addPage([297,210]);doc.setFillColor(248,250,252);doc.rect(0,0,297,210,'F');jy=14;doc.setFontSize(5.5);doc.setTextColor(30,27,75);doc.setFont('courier','normal');}
+      doc.text(b64.slice(i,i+chunkSize),14,jy);
+      jy+=6;
+    }
+    if(jy>200){doc.addPage([297,210]);doc.setFillColor(248,250,252);doc.rect(0,0,297,210,'F');jy=14;}
+    doc.setFontSize(7);doc.setTextColor(100,116,139);doc.setFont('helvetica','normal');
+    doc.text('%%YUMECHIZU_DATA_END%%',14,jy+4);
 
     const fname=`yumechizu_mindmap_${new Date().toISOString().slice(0,10)}.pdf`;
     doc.save(fname);
@@ -3570,7 +3682,7 @@ function importMapPDF(){
   if(!isPaid()){
     const l=L();
     alert(l.code==='ja'
-      ?'PDFインポートはプレミアムプランの機能です。\n\nヘルプ画面からプランの詳細をご確認ください。'
+      ?'JSONインポートはプレミアムプランの機能です。\n\nヘルプ画面からプランの詳細をご確認ください。'
       :'PDF import is a premium feature.\n\nCheck Help for plan details.');
     return;
   }
@@ -3584,7 +3696,7 @@ async function onPdfImportSelected(input){
     // PDFのバイナリを読み込む
     const buffer=await file.arrayBuffer();
     const bytes=new Uint8Array(buffer);
-    const str=new TextDecoder('latin1').decode(bytes);
+    const str=new TextDecoder('utf-8').decode(bytes);
 
     // キーワードからBase64 JSONを抽出（PDFメタデータ方式）
     const kwMatch=str.match(/YUMECHIZU_DATA:([A-Za-z0-9+/=]+)/);
@@ -3607,7 +3719,14 @@ async function onPdfImportSelected(input){
       try{jsonStr=decodeURIComponent(escape(atob(kwMatch[1])));}catch(e){}
     }
     if(!jsonStr&&markerMatch){
-      jsonStr=markerMatch[1].trim();
+      const raw=markerMatch[1].trim().replace(/\s/g,'');
+      // Base64かどうか判定してデコード
+      try{
+        jsonStr=decodeURIComponent(escape(atob(raw)));
+      }catch(e){
+        // Base64でなければそのままJSONとして使用
+        jsonStr=markerMatch[1].trim();
+      }
     }
     if(!jsonStr){
       alert(l.code==='ja'
@@ -3627,7 +3746,7 @@ async function onPdfImportSelected(input){
         showModal(`<div class="mot">🤖 AI改善提案</div>
           <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.6;color:#0c63a4;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${esc(aiPrompt)}</div>
           <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px;color:#92400e;">
-          💡 このプロンプトをコピーして、Claude・ChatGPT等のAIに貼り付けることで、\n自動的にあなたのマインドマップを改善提案してくれます。\n\nAIの回答をコピーした後、PDFとして再度インポートしてください。
+          💡 このプロンプトをコピーして、Claude・ChatGPT等のAIに貼り付けることで、\n自動的にあなたのマインドマップを改善提案してくれます。\n\nAIの回答のJSONをコピーした後、JSONインポートで取り込んでください。
           </div>
           <div style="display:flex;gap:8px;">
             <button id="copy-prompt-btn" style="flex:1;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;">📋 プロンプトをコピー</button>
@@ -4036,6 +4155,26 @@ updateAiTaskBtn();
 updatePdfHdrBtn();
 // 起動時にサーバーからロール・AI回数を同期（バックグラウンド）
 syncRoleFromServer().then(()=>updateAiTaskBtn());
+</script>
+
+<script>
+let _pwaPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  _pwaPrompt=e;
+  const btn=document.getElementById('pwa-install-btn');
+  if(btn){btn.style.display='flex';}
+});
+window.addEventListener('appinstalled',()=>{
+  _pwaPrompt=null;
+  const btn=document.getElementById('pwa-install-btn');
+  if(btn){btn.style.display='none';}
+});
+function pwaInstall(){
+  if(!_pwaPrompt)return;
+  _pwaPrompt.prompt();
+  _pwaPrompt.userChoice.then(()=>{_pwaPrompt=null;});
+}
 </script>
 </body>
 </html>
