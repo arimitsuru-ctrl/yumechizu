@@ -227,8 +227,8 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
 
   <!-- PDFフロート -->
   <div id="pdf-float" style="display:none;position:fixed;top:52px;right:10px;z-index:300;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.18);border:1.5px solid #e0f2fe;padding:14px;min-width:200px;">
-    <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📄 PDF</div>
-    <button onclick="closePdfFloat();exportMapPDF();" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">📄 <span id="pdf-float-export-lbl">PDF出力</span></button>
+    <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:10px;display:flex;align-items:center;gap:6px;"><img src="PDF.png" style="width:20px;height:20px;object-fit:contain;"> PDF</div>
+    <button onclick="closePdfFloat();exportMapPDF();" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;"><img src="PDF.png" style="width:20px;height:20px;object-fit:contain;"> <span id="pdf-float-export-lbl">PDF出力</span></button>
     <button onclick="closePdfFloat();importMapPDF();" id="pdf-float-import-btn" style="width:100%;background:#ede9fe;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 <span id="pdf-float-import-lbl">JSONインポート ✨</span></button>
 
   </div>
