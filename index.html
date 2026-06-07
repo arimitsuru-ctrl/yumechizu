@@ -229,8 +229,8 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
   <div id="pdf-float" style="display:none;position:fixed;top:52px;right:10px;z-index:300;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.18);border:1.5px solid #e0f2fe;padding:14px;min-width:200px;">
     <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📄 PDF</div>
     <button onclick="closePdfFloat();exportMapPDF();" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">📄 <span id="pdf-float-export-lbl">PDF出力</span></button>
-    <button onclick="closePdfFloat();importMapPDF();" id="pdf-float-import-btn" style="width:100%;background:#ede9fe;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 <span id="pdf-float-import-lbl">JSONインポート ✨</span></button>
-    <input type="file" id="pdf-import-input" accept=".pdf" style="display:none" onchange="onPdfImportSelected(this)">
+    <button onclick="closePdfFloat();importMapPDF();" id="pdf-float-import-btn" style="width:100%;background:#ede9fe;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 <span id="pdf-float-import-lbl">PDFインポート ✨</span></button>
+
   </div>
   <!-- PDFフロート背景タップで閉じる -->
   <div id="pdf-float-bg" onclick="closePdfFloat()" style="display:none;position:fixed;inset:0;z-index:299;"></div>
@@ -299,7 +299,7 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
     <div class="sec" id="sec-transfer">
       <div class="sec-t"><span>📤</span><span id="t-transfer">データ転送</span></div>
       <div class="xfer-section"><div class="ct" id="t-export-title">💾 夢の地図データバックアップ</div><p style="font-size:12px;color:#64748b;margin-bottom:9px" id="t-export-desc">全データをファイルに保存してバックアップできます。</p><button class="btn bp bw" onclick="doExport()" id="t-export-btn">📁 バックアップ保存</button></div>
-      <div class="xfer-section"><div class="ct" id="t-import-title">🔄 夢の地図データ復元</div><p style="font-size:12px;color:#64748b;margin-bottom:9px" id="t-import-desc">バックアップファイルを選択してデータを復元します。</p><input type="file" id="import-file" accept=".yume,.json" style="display:none" onchange="doImport(this)"/><button class="btn bp bw" onclick="document.getElementById('import-file').click()" id="t-import-btn">📂 復元ファイルを選択</button><div id="import-msg" style="font-size:12px;margin-top:8px;color:#10b981"></div></div>
+      <div class="xfer-section"><div class="ct" id="t-import-title">🔄 夢の地図データ復元</div><p style="font-size:12px;color:#64748b;margin-bottom:9px" id="t-import-desc">バックアップファイルを選択してデータを復元します。</p><button class="btn bp bw" onclick="openJsonImport()" id="t-import-btn">📂 復元ファイルを選択</button><div id="import-msg" style="font-size:12px;margin-top:8px;color:#10b981"></div></div>
     </div>
 
     <!-- LANG -->
@@ -838,9 +838,26 @@ function doImport(input){
       document.getElementById('import-msg').textContent=L().importOk;
       applyLang(curLang);
     }catch{document.getElementById('import-msg').textContent=L().importErr;}
-    input.value='';
+    try{input.value='';}catch{}
+    // 動的生成inputは削除
+    if(input.dataset.dynamic==='1'&&input.parentNode)input.parentNode.removeChild(input);
   };
   r.readAsText(f);
+}
+
+// JSON/yumeインポート用ファイル選択（iOS対応: 動的inputを生成）
+function openJsonImport(){
+  const inp=document.createElement('input');
+  inp.type='file';
+  inp.accept='.yume,.json,application/json';
+  inp.dataset.dynamic='1';
+  inp.style.cssText='position:fixed;opacity:0;top:0;left:0;width:1px;height:1px;pointer-events:none;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change',function(){doImport(this);});
+  // iOSでは直前ユーザー操作から同一コールスタックで呼ぶ必要あり
+  inp.click();
+  // 60秒後にクリーンアップ（キャンセル時）
+  setTimeout(()=>{if(inp.parentNode)inp.parentNode.removeChild(inp);},60000);
 }
 
 // ============================================================
@@ -3686,7 +3703,15 @@ function importMapPDF(){
       :'PDF import is a premium feature.\n\nCheck Help for plan details.');
     return;
   }
-  document.getElementById('pdf-import-input')?.click();
+  // iOS対応: 動的inputを生成してPDFファイルを選択
+  const inp=document.createElement('input');
+  inp.type='file';
+  inp.accept='.pdf,application/pdf';
+  inp.style.cssText='position:fixed;opacity:0;top:0;left:0;width:1px;height:1px;pointer-events:none;';
+  document.body.appendChild(inp);
+  inp.addEventListener('change',function(){onPdfImportSelected(this);setTimeout(()=>{if(inp.parentNode)inp.parentNode.removeChild(inp);},3000);});
+  inp.click();
+  setTimeout(()=>{if(inp.parentNode)inp.parentNode.removeChild(inp);},60000);
 }
 
 async function onPdfImportSelected(input){
