@@ -229,7 +229,7 @@ body{font-family:'Zen Maru Gothic','Noto Sans JP','Noto Sans',sans-serif;backgro
   <div id="pdf-float" style="display:none;position:fixed;top:52px;right:10px;z-index:300;background:#fff;border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,0.18);border:1.5px solid #e0f2fe;padding:14px;min-width:200px;">
     <div style="font-size:12px;font-weight:700;color:#0e7490;margin-bottom:10px;display:flex;align-items:center;gap:6px;">📄 PDF</div>
     <button onclick="closePdfFloat();exportMapPDF();" style="width:100%;background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;">📄 <span id="pdf-float-export-lbl">PDF出力</span></button>
-    <button onclick="closePdfFloat();importMapPDF();" id="pdf-float-import-btn" style="width:100%;background:#ede9fe;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 <span id="pdf-float-import-lbl">PDFインポート ✨</span></button>
+    <button onclick="closePdfFloat();importMapPDF();" id="pdf-float-import-btn" style="width:100%;background:#ede9fe;color:#7c3aed;border:1.5px solid #c4b5fd;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 <span id="pdf-float-import-lbl">JSONインポート ✨</span></button>
 
   </div>
   <!-- PDFフロート背景タップで閉じる -->
@@ -3700,18 +3700,66 @@ function importMapPDF(){
     const l=L();
     alert(l.code==='ja'
       ?'JSONインポートはプレミアムプランの機能です。\n\nヘルプ画面からプランの詳細をご確認ください。'
-      :'PDF import is a premium feature.\n\nCheck Help for plan details.');
+      :'JSON import is a premium feature.\n\nCheck Help for plan details.');
     return;
   }
-  // iOS対応: 動的inputを生成してPDFファイルを選択
+  // iOS対応: 動的inputでJSONファイルを選択
   const inp=document.createElement('input');
   inp.type='file';
-  inp.accept='.pdf,application/pdf';
+  inp.accept='.json,.yume,application/json';
   inp.style.cssText='position:fixed;opacity:0;top:0;left:0;width:1px;height:1px;pointer-events:none;';
   document.body.appendChild(inp);
-  inp.addEventListener('change',function(){onPdfImportSelected(this);setTimeout(()=>{if(inp.parentNode)inp.parentNode.removeChild(inp);},3000);});
+  inp.addEventListener('change',function(){
+    onJsonMapImportSelected(this);
+    setTimeout(()=>{if(inp.parentNode)inp.parentNode.removeChild(inp);},3000);
+  });
   inp.click();
   setTimeout(()=>{if(inp.parentNode)inp.parentNode.removeChild(inp);},60000);
+}
+
+// JSONファイルを直接読み込んで夢の地図に展開
+async function onJsonMapImportSelected(input){
+  const file=input.files[0];if(!file)return;
+  const l=L();
+  try{
+    const text=await file.text();
+    const data=JSON.parse(text);
+    if(!data.tasks||!Array.isArray(data.tasks)){
+      alert(l.code==='ja'
+        ?'データ形式が不正です。\n夢の地図アプリからエクスポートしたJSONファイルを使用してください。'
+        :'Invalid format. Use a JSON exported from Yume no Chizu.');
+      return;
+    }
+    const taskCount=data.tasks.length;
+    const exportedAt=data.exportedAt?new Date(data.exportedAt).toLocaleString('ja-JP'):'不明';
+    const confirmed=confirm(l.code==='ja'
+      ?`JSONデータを確認しました。\n\nエクスポート日時: ${exportedAt}\nタスク数: ${taskCount}件\n\n[現在のデータに追加]しますか？\nキャンセルで中止します。`
+      :`Found ${taskCount} tasks (exported: ${exportedAt}).\n\n[OK] Add to current data\n[Cancel] Abort`);
+    if(!confirmed)return;
+    // 既存IDと重複しないようにIDを再生成
+    const idMap={};
+    const newTasks=data.tasks.map(t=>{
+      const newId=uid();
+      idMap[t.id]=newId;
+      return {...t,id:newId};
+    });
+    // parentId・childrenを新IDに更新
+    newTasks.forEach(t=>{
+      t.parentId=t.parentId!=null?(idMap[t.parentId]??null):null;
+      t.children=(t.children||[]).map(cid=>idMap[cid]).filter(Boolean);
+    });
+    D.tasks=[...D.tasks,...newTasks];
+    save();render();
+    alert(l.code==='ja'
+      ?`インポート完了！\n${taskCount}件のタスクを追加しました。`
+      :`Import complete! Added ${taskCount} tasks.`);
+    switchSec('map');
+  }catch(e){
+    console.error('JSON import error:',e);
+    alert((l.code==='ja'?'インポートエラー: ':'Import error: ')+e.message);
+  }finally{
+    try{input.value='';}catch{}
+  }
 }
 
 async function onPdfImportSelected(input){
