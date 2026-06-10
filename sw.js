@@ -4,7 +4,7 @@
    - 静的アセットのみキャッシュ
 ================================ */
 
-const CACHE_VERSION = 99;
+const CACHE_VERSION = 100;
 const STATIC_CACHE = `yumechizu-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `yumechizu-dynamic-v${CACHE_VERSION}`;
 
@@ -54,8 +54,14 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  /* ---------- HTML（index.html） ---------- */
+  /* ---------- HTML ---------- */
   if (request.mode === 'navigate') {
+    // legal/terms/privacy/support等の独立ページはそのまま取得
+    const isSubPage = url.pathname !== '/' && url.pathname !== '/index.html' && url.pathname.endsWith('.html');
+    if (isSubPage) {
+      event.respondWith(fetch(request).catch(() => caches.match(request)));
+      return;
+    }
     event.respondWith(
       fetch(request)
         .then(res => {
