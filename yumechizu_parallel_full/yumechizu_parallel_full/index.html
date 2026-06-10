@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>夢地図</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="screens">
+      <section class="screen">マップ画面</section>
+      <section class="screen">タスク画面</section>
+      <section class="screen">夢地図画面</section>
+      <section class="screen">買い物画面</section>
+      <section class="screen">カレンダー画面</section>
+      <section class="screen" id="wallpaper">
+        <h2>壁紙カラー</h2>
+        <div class="palette">
+          <div class="color" style="--c:#f8fafc"></div>
+          <div class="color" style="--c:#e0f2fe"></div>
+          <div class="color" style="--c:#ecfeff"></div>
+          <div class="color" style="--c:#fef3c7"></div>
+          <div class="color" style="--c:#1e293b"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <button onclick="go(0)">マップ</button>
+    <button onclick="go(1)">タスク</button>
+    <button onclick="go(2)">夢地図</button>
+    <button onclick="go(3)">買い物</button>
+    <button onclick="go(4)">カレンダー</button>
+    <button onclick="go(5)">🎨</button>
+  </footer>
+
+<script src="main.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>

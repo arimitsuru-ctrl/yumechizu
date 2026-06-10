@@ -1,0 +1,7 @@
+open-webui-env
+node_modules
+.git
+.wrangler
+yumechizu_parallel_full
+yumechizu-pages-backup-20260503-1953.zip
+wget-log

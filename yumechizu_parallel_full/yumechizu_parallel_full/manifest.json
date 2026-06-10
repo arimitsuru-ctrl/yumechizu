@@ -1,0 +1,10 @@
+
+{
+  "name": "夢地図",
+  "short_name": "夢地図",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#06B6D4",
+  "icons": []
+}

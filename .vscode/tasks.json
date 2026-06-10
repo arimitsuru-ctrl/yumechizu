@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "🚀 Start Yumechizu Dev Server",
+			"type": "shell",
+			"command": "cd /home/arisawa/yumechizu/yumechizu-pages && wrangler pages dev",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
